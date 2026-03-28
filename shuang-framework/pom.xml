@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>shuang-pro</artifactId>
+        <groupId>cn.shuang.boot</groupId>
+        <version>${revision}</version>
+    </parent>
+    <packaging>pom</packaging>
+    <modules>
+        <module>shuang-common</module>
+        <module>shuang-spring-boot-starter-mybatis</module>
+        <module>shuang-spring-boot-starter-redis</module>
+        <module>shuang-spring-boot-starter-web</module>
+        <module>shuang-spring-boot-starter-security</module>
+        <module>shuang-spring-boot-starter-websocket</module>
+
+        <module>shuang-spring-boot-starter-monitor</module>
+        <module>shuang-spring-boot-starter-protection</module>
+        <module>shuang-spring-boot-starter-job</module>
+        <module>shuang-spring-boot-starter-mq</module>
+
+        <module>shuang-spring-boot-starter-excel</module>
+        <module>shuang-spring-boot-starter-test</module>
+
+        <module>shuang-spring-boot-starter-biz-tenant</module>
+        <module>shuang-spring-boot-starter-biz-data-permission</module>
+        <module>shuang-spring-boot-starter-biz-ip</module>
+    </modules>
+
+    <artifactId>shuang-framework</artifactId>
+    <description>
+        技术组件模块，包含框架组件和业务组件
+    </description>
+    <url>https://github.com/shuang-pro/shuang-pro</url>
+
+</project>

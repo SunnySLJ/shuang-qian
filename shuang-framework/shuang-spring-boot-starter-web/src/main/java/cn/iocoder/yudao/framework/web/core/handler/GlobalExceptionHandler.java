@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static cn.iocoder.yudao.framework.common.exception.enums.GlobalErrorCodeConstants.*;
+import static cn.shuang.framework.common.exception.enums.GlobalErrorCodeConstants.*;
 
 /**
  * 全局异常处理器，将 Exception 翻译成 CommonResult + 对应的异常编号

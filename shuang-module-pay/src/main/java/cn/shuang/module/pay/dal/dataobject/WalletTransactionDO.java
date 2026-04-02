@@ -1,5 +1,7 @@
 package cn.shuang.module.pay.dal.dataobject;
 
+import cn.shuang.framework.mybatis.core.dataobject.BaseDO;
+
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.*;
 

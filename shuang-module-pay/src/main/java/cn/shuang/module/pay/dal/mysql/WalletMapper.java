@@ -3,6 +3,8 @@ package cn.shuang.module.pay.dal.mysql;
 import cn.shuang.module.pay.dal.dataobject.WalletDO;
 import cn.shuang.module.pay.dal.dataobject.WalletTransactionDO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;

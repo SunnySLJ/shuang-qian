@@ -12,7 +12,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
-import static cn.iocoder.yudao.framework.web.config.YudaoWebAutoConfiguration.createFilterBean;
+import static cn.shuang.framework.web.config.YudaoWebAutoConfiguration.createFilterBean;
 
 @AutoConfiguration
 @Slf4j

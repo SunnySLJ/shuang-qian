@@ -4,6 +4,8 @@ import cn.shuang.framework.common.pojo.CommonResult;
 import cn.shuang.framework.common.pojo.PageParam;
 import cn.shuang.framework.common.pojo.PageResult;
 import cn.shuang.module.agency.controller.admin.vo.AgencyUserVO;
+import cn.shuang.module.agency.controller.admin.vo.AgencyWalletVO;
+import cn.shuang.module.agency.controller.admin.vo.AgencyPointTransferVO;
 import cn.shuang.module.agency.dal.dataobject.AgencyPointTransferDO;
 import cn.shuang.module.agency.dal.dataobject.AgencyUserDO;
 import cn.shuang.module.agency.service.AgencyPointService;
@@ -58,7 +60,8 @@ public class AgencyPointController {
     public CommonResult<PageResult<AgencyPointTransferVO>> transferRecords(PageParam pageParam,
             @Parameter(description = "用户 ID") @RequestParam(required = false) Long userId) {
         PageResult<AgencyPointTransferDO> pageResult = agencyPointService.getPage(userId, pageParam.getPageNo(), pageParam.getPageSize());
-        return success(pageResult.convert(this::convert));
+        List<AgencyPointTransferVO> list = pageResult.getList().stream().map(this::convert).toList();
+        return success(new PageResult<>(list, pageResult.getTotal()));
     }
 
     @GetMapping("/wallet")
@@ -81,7 +84,8 @@ public class AgencyPointController {
     public CommonResult<PageResult<AgencyPointTransferVO>> getTransactions(PageParam pageParam,
             @Parameter(description = "用户 ID") @RequestParam Long userId) {
         PageResult<AgencyPointTransferDO> pageResult = agencyPointService.getTransactions(userId, pageParam.getPageNo(), pageParam.getPageSize());
-        return success(pageResult.convert(this::convert));
+        List<AgencyPointTransferVO> list = pageResult.getList().stream().map(this::convert).toList();
+        return success(new PageResult<>(list, pageResult.getTotal()));
     }
 
     private AgencyPointTransferVO convert(AgencyPointTransferDO entity) {

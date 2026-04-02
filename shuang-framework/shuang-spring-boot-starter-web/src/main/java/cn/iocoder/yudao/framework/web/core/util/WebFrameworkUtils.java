@@ -29,7 +29,7 @@ public class WebFrameworkUtils {
     /**
      * 终端的 Header
      *
-     * @see cn.iocoder.yudao.framework.common.enums.TerminalEnum
+     * @see cn.shuang.framework.common.enums.TerminalEnum
      */
     public static final String HEADER_TERMINAL = "terminal";
 

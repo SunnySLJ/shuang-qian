@@ -1,6 +1,5 @@
 package cn.shuang.module.pay.service.impl;
 
-import cn.shuang.module.agency.service.CommissionService;
 import cn.shuang.module.pay.dal.dataobject.RechargeOrderDO;
 import cn.shuang.module.pay.dal.mysql.RechargeOrderMapper;
 import cn.shuang.module.pay.service.RechargeService;
@@ -8,10 +7,11 @@ import cn.shuang.module.pay.service.WalletService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
+import jakarta.annotation.Resource;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -32,7 +32,7 @@ public class RechargeServiceImpl implements RechargeService {
     private WalletService walletService;
 
     @Resource
-    private CommissionService commissionService;
+    private ApplicationContext applicationContext;
 
     @Resource
     private ObjectMapper objectMapper;
@@ -172,14 +172,23 @@ public class RechargeServiceImpl implements RechargeService {
 
         // 7. 计算代理分成（如果有上级代理）
         try {
-            Long commissionRecordId = commissionService.calculateRechargeCommission(
+            // 通过 ApplicationContext 动态获取 CommissionService（避免循环依赖）
+            // 使用字符串方式获取，避免编译时依赖 agency 模块
+            Object commissionService = applicationContext.getBean("commissionServiceImpl");
+            if (commissionService != null) {
+                // 使用反射调用 calculateRechargeCommission 方法
+                java.lang.reflect.Method method = commissionService.getClass()
+                    .getMethod("calculateRechargeCommission", Long.class, Integer.class, String.class);
+                Long commissionRecordId = (Long) method.invoke(commissionService,
                     order.getUserId(), order.getTotalPoints(), orderNo);
-            if (commissionRecordId != null) {
-                log.info("[RechargeService] 代理分成计算成功 - userId: {}, commissionRecordId: {}",
-                        order.getUserId(), commissionRecordId);
+                if (commissionRecordId != null) {
+                    log.info("[RechargeService] 代理分成计算成功 - userId: {}, commissionRecordId: {}",
+                            order.getUserId(), commissionRecordId);
+                }
             }
         } catch (Exception e) {
-            log.error("[RechargeService] 计算代理分成失败 - userId: {}", order.getUserId(), e);
+            // CommissionService 可能不存在（当 agency 模块未加载时），静默处理
+            log.debug("[RechargeService] 计算代理分成失败或 CommissionService 不存在 - userId: {}", order.getUserId(), e);
             // 分成失败不影响主流程，仅记录日志
         }
 

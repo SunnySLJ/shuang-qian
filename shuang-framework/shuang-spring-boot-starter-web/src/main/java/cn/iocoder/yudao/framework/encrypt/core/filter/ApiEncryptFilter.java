@@ -27,7 +27,7 @@ import org.springframework.web.util.ServletRequestPathUtils;
 
 import java.io.IOException;
 
-import static cn.iocoder.yudao.framework.common.exception.util.ServiceExceptionUtil.invalidParamException;
+import static cn.shuang.framework.common.exception.util.ServiceExceptionUtil.invalidParamException;
 
 /**
  * API 加密过滤器，处理 {@link ApiEncrypt} 注解。

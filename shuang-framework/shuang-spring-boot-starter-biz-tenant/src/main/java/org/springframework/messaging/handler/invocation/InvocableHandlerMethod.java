@@ -32,7 +32,7 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.HandlerMethod;
 import org.springframework.util.ObjectUtils;
 
-import static cn.iocoder.yudao.framework.web.core.util.WebFrameworkUtils.HEADER_TENANT_ID;
+import static cn.shuang.framework.web.core.util.WebFrameworkUtils.HEADER_TENANT_ID;
 
 /**
  * Extension of {@link HandlerMethod} that invokes the underlying method with

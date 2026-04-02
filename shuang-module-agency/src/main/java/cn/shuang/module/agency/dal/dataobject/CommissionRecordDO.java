@@ -1,5 +1,6 @@
 package cn.shuang.module.agency.dal.dataobject;
 
+import cn.shuang.framework.mybatis.core.dataobject.BaseDO;
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.*;
 

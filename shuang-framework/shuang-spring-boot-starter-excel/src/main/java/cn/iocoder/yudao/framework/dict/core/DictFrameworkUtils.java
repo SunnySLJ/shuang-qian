@@ -13,7 +13,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
 
-import static cn.iocoder.yudao.framework.common.util.collection.CollectionUtils.convertList;
+import static cn.shuang.framework.common.util.collection.CollectionUtils.convertList;
 
 /**
  * 字典工具类

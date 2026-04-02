@@ -36,8 +36,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 import java.util.Map;
 
-import static cn.iocoder.yudao.framework.apilog.core.interceptor.ApiAccessLogInterceptor.ATTRIBUTE_HANDLER_METHOD;
-import static cn.iocoder.yudao.framework.common.util.json.JsonUtils.toJsonString;
+import static cn.shuang.framework.apilog.core.interceptor.ApiAccessLogInterceptor.ATTRIBUTE_HANDLER_METHOD;
+import static cn.shuang.framework.common.util.json.JsonUtils.toJsonString;
 
 /**
  * API 访问日志 Filter

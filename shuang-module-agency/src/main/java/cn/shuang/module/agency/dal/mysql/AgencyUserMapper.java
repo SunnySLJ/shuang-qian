@@ -32,7 +32,14 @@ public interface AgencyUserMapper extends BaseMapperX<AgencyUserDO> {
      * @param parentAgencyId 上级代理 ID
      * @return 下级列表
      */
-    List<AgencyUserDO> selectByParentAgencyId(@Param("parentAgencyId") Long parentAgencyId);
+    @org.apache.ibatis.annotations.Select("<script>" +
+            "SELECT au.*, su.nickname " +
+            "FROM agency_user au " +
+            "LEFT JOIN system_users su ON au.user_id = su.id " +
+            "WHERE au.parent_agency_id = #{parentAgencyId} AND au.deleted = 0 " +
+            "ORDER BY au.id DESC" +
+            "</script>")
+    java.util.List<AgencyUserDO> selectByParentAgencyId(@org.apache.ibatis.annotations.Param("parentAgencyId") Long parentAgencyId);
 
     /**
      * 统计直推人数

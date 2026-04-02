@@ -39,7 +39,8 @@ public class AgencyUserController {
     public CommonResult<PageResult<AgencyUserVO>> list(PageParam pageParam,
             @Parameter(description = "用户昵称") @RequestParam(required = false) String nickname) {
         PageResult<AgencyUserDO> pageResult = agencyUserService.getPage(nickname, pageParam.getPageNo(), pageParam.getPageSize());
-        return success(pageResult.convert(this::convert));
+        List<AgencyUserVO> list = pageResult.getList().stream().map(this::convert).toList();
+        return success(new PageResult<>(list, pageResult.getTotal()));
     }
 
     @GetMapping("/get")

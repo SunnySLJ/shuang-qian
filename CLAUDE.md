@@ -116,3 +116,45 @@ java -jar shuang-server/target/shuang-server.jar
 - 不要随意改动无关模块
 - 涉及接口、数据库、配置的改动时，明确说明影响面
 - 如果需求不清楚，先确认范围，再修改代码
+
+## gstack
+
+本项目已安装 [gstack](https://github.com/garrytan/gstack) —— 一套由 YC CEO Garry Tan 开源的 AI 代理协作工具。
+
+**Web 浏览**：使用 `/browse` skill 进行所有网页浏览操作，不要使用 `mcp__claude-in-chrome__*` 工具。
+
+**可用技能**：
+- `/office-hours` - 创业诊断和头脑风暴
+- `/plan-ceo-review` - 产品规划审查
+- `/plan-eng-review` - 技术方案审查
+- `/plan-design-review` - 设计审查
+- `/design-consultation` - 设计系统咨询
+- `/design-shotgun` - 视觉设计探索
+- `/design-html` - HTML 设计生成
+- `/review` - PR 代码审查
+- `/ship` - 发布流程
+- `/land-and-deploy` - 合并部署
+- `/canary` - 金丝雀监控
+- `/benchmark` - 性能基准测试
+- `/browse` - 无头浏览器操作
+- `/connect-chrome` - 连接 Chrome 浏览器
+- `/qa` - 质量保证测试
+- `/qa-only` - 仅 QA 报告
+- `/design-review` - 设计审查
+- `/setup-browser-cookies` - 浏览器 Cookie 配置
+- `/setup-deploy` - 部署配置
+- `/retro` - 项目回顾
+- `/investigate` - 问题调查
+- `/document-release` - 发布文档
+- `/codex` - 多 AI 意见征询
+- `/cso` - 安全审计（OWASP + STRIDE）
+- `/autoplan` - 自动规划流程
+- `/careful` - 安全操作检查
+- `/freeze` - 代码冻结
+- `/guard` - 安全检查
+- `/unfreeze` - 解冻代码
+- `/gstack-upgrade` - gstack 升级
+- `/learn` - 项目学习
+- `/checkpoint` - 项目进度检查
+
+如果 gstack 技能无法使用，运行 `cd .claude/skills/gstack && ./setup` 重新构建。

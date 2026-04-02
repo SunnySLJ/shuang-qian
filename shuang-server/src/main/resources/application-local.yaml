@@ -47,8 +47,8 @@ spring:
       primary: master
       datasource:
         master:
-          url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-pro?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J 8.X 连接的示例
-          #          url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-pro?useSSL=true&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true # MySQL Connector/J 5.X 连接的示例
+          url: jdbc:mysql://127.0.0.1:3306/shuang_pro?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true&rewriteBatchedStatements=true # MySQL Connector/J 8.X 连接的示例
+          #          url: jdbc:mysql://127.0.0.1:3306/shuang_pro?useSSL=true&allowPublicKeyRetrieval=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true # MySQL Connector/J 5.X 连接的示例
           #          url: jdbc:postgresql://127.0.0.1:5432/ruoyi-vue-pro # PostgreSQL 连接的示例
           #          url: jdbc:oracle:thin:@127.0.0.1:1521:xe # Oracle 连接的示例
           #          url: jdbc:sqlserver://127.0.0.1:1433;DatabaseName=ruoyi-vue-pro;SelectMethod=cursor;encrypt=false;rewriteBatchedStatements=true;useUnicode=true;characterEncoding=utf-8 # SQLServer 连接的示例
@@ -56,7 +56,7 @@ spring:
           #          url: jdbc:kingbase8://127.0.0.1:54321/test  # 人大金仓 KingbaseES 连接的示例
           #          url: jdbc:postgresql://127.0.0.1:5432/postgres # OpenGauss 连接的示例
           username: root
-          password: 123456
+          password: yaok@123
           #          username: sa # SQL Server 连接的示例
           #          password: Yudao@2024 # SQL Server 连接的示例
           #          username: SYSDBA # DM 连接的示例
@@ -65,9 +65,9 @@ spring:
           #          password: Yudao@2024 # OpenGauss 连接的示例
         slave: # 模拟从库，可根据自己需要修改
           lazy: true # 开启懒加载，保证启动速度
-          url: jdbc:mysql://127.0.0.1:3306/ruoyi-vue-pro?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
+          url: jdbc:mysql://127.0.0.1:3306/shuang_pro?useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true&nullCatalogMeansCurrent=true
           username: root
-          password: 123456
+          password: yaok@123
 #        tdengine: # IoT 数据库（需要 IoT 物联网再开启噢！）
 #          lazy: true # 开启懒加载，保证启动速度
 #          url: jdbc:TAOS-WS://127.0.0.1:6041/ruoyi_vue_pro?varcharAsString=true
@@ -170,26 +170,26 @@ logging:
     name: ${user.home}/logs/${spring.application.name}.log # 日志文件名，全路径
   level:
     # 配置自己写的 MyBatis Mapper 打印日志
-    cn.iocoder.yudao.module.bpm.dal.mysql: debug
-    cn.iocoder.yudao.module.infra.dal.mysql: debug
-    cn.iocoder.yudao.module.infra.dal.mysql.logger.ApiErrorLogMapper: INFO # 配置 ApiErrorLogMapper 的日志级别为 info，避免和 GlobalExceptionHandler 重复打印
-    cn.iocoder.yudao.module.infra.dal.mysql.job.JobLogMapper: INFO # 配置 JobLogMapper 的日志级别为 info
-    cn.iocoder.yudao.module.infra.dal.mysql.file.FileConfigMapper: INFO # 配置 FileConfigMapper 的日志级别为 info
-    cn.iocoder.yudao.module.pay.dal.mysql: debug
-    cn.iocoder.yudao.module.pay.dal.mysql.notify.PayNotifyTaskMapper: INFO # 配置 PayNotifyTaskMapper 的日志级别为 info
-    cn.iocoder.yudao.module.system.dal.mysql: debug
-    cn.iocoder.yudao.module.system.dal.mysql.sms.SmsChannelMapper: INFO # 配置 SmsChannelMapper 的日志级别为 info
-    cn.iocoder.yudao.module.tool.dal.mysql: debug
-    cn.iocoder.yudao.module.member.dal.mysql: debug
-    cn.iocoder.yudao.module.trade.dal.mysql: debug
-    cn.iocoder.yudao.module.promotion.dal.mysql: debug
-    cn.iocoder.yudao.module.statistics.dal.mysql: debug
-    cn.iocoder.yudao.module.crm.dal.mysql: debug
-    cn.iocoder.yudao.module.erp.dal.mysql: debug
-    cn.iocoder.yudao.module.iot.dal.mysql: debug
-    cn.iocoder.yudao.module.iot.dal.tdengine: DEBUG
-    cn.iocoder.yudao.module.iot.service.rule: debug
-    cn.iocoder.yudao.module.ai.dal.mysql: debug
+    cn.shuang.module.bpm.dal.mysql: debug
+    cn.shuang.module.infra.dal.mysql: debug
+    cn.shuang.module.infra.dal.mysql.logger.ApiErrorLogMapper: INFO
+    cn.shuang.module.infra.dal.mysql.job.JobLogMapper: INFO
+    cn.shuang.module.infra.dal.mysql.file.FileConfigMapper: INFO
+    cn.shuang.module.pay.dal.mysql: debug
+    cn.shuang.module.pay.dal.mysql.notify.PayNotifyTaskMapper: INFO
+    cn.shuang.module.system.dal.mysql: debug
+    cn.shuang.module.system.dal.mysql.sms.SmsChannelMapper: INFO
+    cn.shuang.module.tool.dal.mysql: debug
+    cn.shuang.module.member.dal.mysql: debug
+    cn.shuang.module.trade.dal.mysql: debug
+    cn.shuang.module.promotion.dal.mysql: debug
+    cn.shuang.module.statistics.dal.mysql: debug
+    cn.shuang.module.crm.dal.mysql: debug
+    cn.shuang.module.erp.dal.mysql: debug
+    cn.shuang.module.iot.dal.mysql: debug
+    cn.shuang.module.iot.dal.tdengine: DEBUG
+    cn.shuang.module.iot.service.rule: debug
+    cn.shuang.module.ai.dal.mysql: debug
     org.springframework.context.support.PostProcessorRegistrationDelegate: ERROR # TODO 芋艿：先禁用，Spring Boot 3.X 存在部分错误的 WARN 提示
 
 debug: false

@@ -1,5 +1,7 @@
 package cn.shuang.module.agency.service.impl;
 
+import cn.hutool.core.util.IdUtil;
+import cn.shuang.framework.common.pojo.PageParam;
 import cn.shuang.framework.common.pojo.PageResult;
 import cn.shuang.module.agency.dal.dataobject.AgencyPointTransferDO;
 import cn.shuang.module.agency.dal.dataobject.AgencyUserDO;
@@ -7,8 +9,9 @@ import cn.shuang.module.agency.dal.mysql.AgencyPointTransferMapper;
 import cn.shuang.module.agency.dal.mysql.AgencyUserMapper;
 import cn.shuang.module.agency.enums.PointTransferBizTypeEnum;
 import cn.shuang.module.agency.service.AgencyPointService;
-import cn.shuang.module.pay.service.wallet.PayWalletService;
+import cn.shuang.module.pay.service.WalletService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,7 +29,7 @@ public class AgencyPointServiceImpl implements AgencyPointService {
 
     private final AgencyUserMapper agencyUserMapper;
     private final AgencyPointTransferMapper pointTransferMapper;
-    private final PayWalletService payWalletService;
+    private final WalletService walletService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -51,7 +54,7 @@ public class AgencyPointServiceImpl implements AgencyPointService {
 
         // 2. 更新已分配积分
         int updated = agencyUserMapper.update(null,
-            cn.shuang.framework.mybatis.core.util.MyBatisUtils.buildUpdateWrapper(new AgencyUserDO())
+            new UpdateWrapper<AgencyUserDO>()
                 .eq("user_id", fromUserId)
                 .setSql("distributed_points = distributed_points + " + pointAmount));
 
@@ -61,18 +64,19 @@ public class AgencyPointServiceImpl implements AgencyPointService {
         }
 
         // 3. 记录积分流水
+        String bizOrderNo = IdUtil.fastSimpleUUID();
         AgencyPointTransferDO transfer = AgencyPointTransferDO.builder()
                 .fromUserId(fromUserId)
                 .toUserId(toUserId)
                 .pointAmount(pointAmount)
-                .bizType(PointTransferBizTypeEnum.MANUAL_DISTRIBUTION.getType())
+                .bizType(PointTransferBizTypeEnum.MANUAL_TRANSFER.getType())
                 .description(description != null ? description : "手动分配")
                 .build();
 
         pointTransferMapper.insert(transfer);
 
         // 4. 添加到接收方钱包
-        // payWalletService.addPoints(toUserId, pointAmount, "积分分配");
+        walletService.addPoints(toUserId, pointAmount, 2, bizOrderNo, "代理分配积分：" + description);
 
         return true;
     }
@@ -84,7 +88,10 @@ public class AgencyPointServiceImpl implements AgencyPointService {
             wrapper.eq(AgencyPointTransferDO::getFromUserId, userId);
         }
         wrapper.orderByDesc(AgencyPointTransferDO::getId);
-        return pointTransferMapper.selectPage(pageNo, pageSize, wrapper);
+        PageParam pageParam = new PageParam();
+        pageParam.setPageNo(pageNo);
+        pageParam.setPageSize(pageSize);
+        return pointTransferMapper.selectPage(pageParam, wrapper);
     }
 
     @Override
@@ -95,9 +102,17 @@ public class AgencyPointServiceImpl implements AgencyPointService {
         }
 
         int availablePoints = agencyUser.getTotalPoints() - agencyUser.getDistributedPoints();
-        int frozenPoints = 0; // TODO: 如果有冻结积分逻辑，从这里补充
+        int frozenPoints = 0;
         int totalDistributed = agencyUser.getDistributedPoints();
-        int totalReceived = 0; // TODO: 需要查询收到的积分总和
+
+        // 查询收到的积分总和
+        int totalReceived = 0;
+        LambdaQueryWrapper<AgencyPointTransferDO> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(AgencyPointTransferDO::getToUserId, userId);
+        Long totalReceivedLong = pointTransferMapper.selectCount(wrapper);
+        if (totalReceivedLong != null) {
+            totalReceived = totalReceivedLong.intValue();
+        }
 
         return new int[]{availablePoints, frozenPoints, totalDistributed, totalReceived};
     }
@@ -108,7 +123,10 @@ public class AgencyPointServiceImpl implements AgencyPointService {
         wrapper.and(w -> w.eq(AgencyPointTransferDO::getFromUserId, userId)
                          .or().eq(AgencyPointTransferDO::getToUserId, userId));
         wrapper.orderByDesc(AgencyPointTransferDO::getId);
-        return pointTransferMapper.selectPage(pageNo, pageSize, wrapper);
+        PageParam pageParam = new PageParam();
+        pageParam.setPageNo(pageNo);
+        pageParam.setPageSize(pageSize);
+        return pointTransferMapper.selectPage(pageParam, wrapper);
     }
 
 }

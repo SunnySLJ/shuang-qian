@@ -28,6 +28,7 @@ public enum AiPlatformEnum implements ArrayValuable<String> {
     MINI_MAX("MiniMax", "MiniMax"), // 稀宇科技
     MOONSHOT("Moonshot", "月之暗面"), // KIMI
     BAI_CHUAN("BaiChuan", "百川智能"), // 百川智能
+    WU_MO("WuMo", "舞墨 AI"), // 舞墨 AI
 
     // ========== 国外平台 ==========
 

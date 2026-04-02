@@ -1,5 +1,6 @@
 package cn.shuang.module.agency.service.impl;
 
+import cn.shuang.framework.common.pojo.PageResult;
 import cn.shuang.framework.mybatis.core.util.MyBatisUtils;
 import cn.shuang.module.agency.dal.dataobject.AgencyPointTransferDO;
 import cn.shuang.module.agency.dal.dataobject.AgencyUserDO;
@@ -96,7 +97,7 @@ public class AgencyUserServiceImpl implements AgencyUserService {
     }
 
     @Override
-    public List<AgencyUserDO> getChildren(Long parentAgencyId) {
+    public java.util.List<AgencyUserDO> getChildren(Long parentAgencyId) {
         return agencyUserMapper.selectByParentAgencyId(parentAgencyId);
     }
 
@@ -140,6 +141,17 @@ public class AgencyUserServiceImpl implements AgencyUserService {
         // payWalletService.addPoints(userId, points, "代理分成");
 
         return true;
+    }
+
+    @Override
+    public PageResult<AgencyUserDO> getPage(String nickname, Integer pageNo, Integer pageSize) {
+        // 使用联查 nickname 的分页方法
+        return agencyUserMapper.selectPageByNickname(nickname);
+    }
+
+    @Override
+    public AgencyUserDO getById(Long id) {
+        return agencyUserMapper.selectById(id);
     }
 
 }

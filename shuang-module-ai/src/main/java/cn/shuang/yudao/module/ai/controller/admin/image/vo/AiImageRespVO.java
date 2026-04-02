@@ -57,4 +57,25 @@ public class AiImageRespVO {
     @Schema(description = "创建时间", requiredMode = Schema.RequiredMode.REQUIRED)
     private LocalDateTime createTime;
 
+    @Schema(description = "生成类型：1-生图，2-文生视频，3-图生视频，4-黄金 6 秒，5-AI 混剪，6-视频拆解 - 提取脚本，7-视频拆解 - 分析元素，8-视频拆解 - 生成提示词")
+    private Integer generationType;
+
+    @Schema(description = "输入图片 URL（图生视频用）")
+    private String inputImageUrl;
+
+    @Schema(description = "输入视频 URL（视频拆解用）")
+    private String inputVideoUrl;
+
+    @Schema(description = "输出 URL（视频或图片）")
+    private String outputUrl;
+
+    @Schema(description = "视频封面 URL")
+    private String coverUrl;
+
+    @Schema(description = "视频时长（秒）")
+    private Integer duration;
+
+    @Schema(description = "任务编号")
+    private String taskId;
+
 }

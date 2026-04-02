@@ -11,6 +11,7 @@
         <result column="bind_mode" property="bindMode"/>
         <result column="total_points" property="totalPoints"/>
         <result column="distributed_points" property="distributedPoints"/>
+        <result column="total_commission" property="totalCommission"/>
         <result column="direct_invite_count" property="directInviteCount"/>
         <result column="team_total_count" property="teamTotalCount"/>
         <result column="agency_fee" property="agencyFee"/>
@@ -41,5 +42,14 @@
         WHERE parent_agency_id = #{userId}
         AND deleted = 0
     </select>
+
+    <!-- 增加代理累计佣金 -->
+    <update id="addTotalCommission">
+        UPDATE agency_user
+        SET total_commission = total_commission + #{amount},
+            update_time = NOW()
+        WHERE id = #{id}
+        AND deleted = 0
+    </update>
 
 </mapper>

@@ -1,5 +1,6 @@
 package cn.shuang.module.agency.service;
 
+import cn.shuang.framework.common.pojo.PageResult;
 import cn.shuang.module.agency.dal.dataobject.AgencyUserDO;
 
 import java.util.List;
@@ -62,5 +63,23 @@ public interface AgencyUserService {
      * @return 是否成功
      */
     boolean addPoints(Long userId, Integer points, Long orderId);
+
+    /**
+     * 分页查询代理用户列表
+     *
+     * @param nickname 用户昵称（可选）
+     * @param pageNo 页码
+     * @param pageSize 每页大小
+     * @return 分页结果
+     */
+    PageResult<AgencyUserDO> getPage(String nickname, Integer pageNo, Integer pageSize);
+
+    /**
+     * 根据 ID 查询代理用户
+     *
+     * @param id 主键 ID
+     * @return 代理用户信息
+     */
+    AgencyUserDO getById(Long id);
 
 }

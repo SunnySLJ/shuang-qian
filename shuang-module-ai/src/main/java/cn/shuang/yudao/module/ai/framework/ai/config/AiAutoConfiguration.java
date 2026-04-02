@@ -16,6 +16,7 @@ import cn.shuang.module.ai.framework.ai.core.model.suno.api.SunoApi;
 import cn.shuang.module.ai.framework.ai.core.model.xinghuo.XingHuoChatModel;
 import cn.shuang.module.ai.framework.ai.core.webserch.AiWebSearchClient;
 import cn.shuang.module.ai.framework.ai.core.webserch.bocha.AiBoChaWebSearchClient;
+import cn.shuang.module.ai.framework.ai.config.WuMoAiConfiguration;
 import cn.shuang.module.ai.tool.method.PersonService;
 import io.micrometer.observation.ObservationRegistry;
 import lombok.extern.slf4j.Slf4j;
@@ -57,6 +58,8 @@ import java.util.Optional;
         RedisVectorStoreProperties.class, // 解析 Redis 配置
         MilvusVectorStoreProperties.class, MilvusServiceClientProperties.class // 解析 Milvus 配置
 })
+// 导入舞墨 AI 配置类
+@Import(WuMoAiConfiguration.class)
 @Slf4j
 public class AiAutoConfiguration {
 

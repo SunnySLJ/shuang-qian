@@ -254,6 +254,12 @@ yudao:
     web-search:
       enable: true
       api-key: sk-40500e52840f4d24b956d0b1d80d9abe
+    wumo: # 舞墨 AI - 视频生成
+      enable: true
+      api-key: XQuRvI6ZUoVg37e0PpcYDheRfY
+      base-url: https://api.wuyinkeji.com
+      poll-interval: 3000 # 轮询间隔（毫秒）
+      max-wait-time: 300000 # 最大等待时间（毫秒）
 
 --- #################### 芋道相关配置 ####################
 

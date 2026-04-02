@@ -120,8 +120,39 @@ public class AiImageDO extends BaseDO {
      * 任务编号
      *
      * 1. midjourney proxy：关联的 task id
+     * 2. 舞墨 AI：关联的 task id
      */
     private String taskId;
+
+    /**
+     * 生成类型：1-生图，2-文生视频，3-图生视频，4-黄金 6 秒，5-AI 混剪，6-视频拆解 - 提取脚本，7-视频拆解 - 分析元素，8-视频拆解 - 生成提示词
+     */
+    private Integer generationType;
+
+    /**
+     * 输入图片 URL（图生视频用）
+     */
+    private String inputImageUrl;
+
+    /**
+     * 输入视频 URL（视频拆解用）
+     */
+    private String inputVideoUrl;
+
+    /**
+     * 输出 URL（视频或图片）
+     */
+    private String outputUrl;
+
+    /**
+     * 视频封面 URL
+     */
+    private String coverUrl;
+
+    /**
+     * 视频时长（秒）
+     */
+    private Integer duration;
 
 }
 

@@ -217,8 +217,8 @@ INSERT INTO `agency_config` (`config_key`, `config_value`, `config_type`, `descr
 -- 9. 初始化数据 - 测试用户钱包
 -- =============================================
 -- 为系统管理员初始化钱包（用于测试）
-INSERT INTO `pay_wallet` (`user_id`, `balance`, `total_recharge`, `description`)
-VALUES (1, 1000000, 1000000, '系统管理员初始积分')
+INSERT INTO `pay_wallet` (`user_id`, `balance`, `total_recharge`)
+VALUES (1, 1000000, 1000000)
 ON DUPLICATE KEY UPDATE `balance` = `balance` + 1000000;
 
 -- =============================================

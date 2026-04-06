@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static cn.shuang.framework.common.pojo.CommonResult.success;
+import static cn.shuang.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
 
 /**
  * 积分管理 - 管理后台
@@ -48,8 +49,8 @@ public class AgencyPointController {
             @Parameter(description = "接收方用户 ID") @RequestParam Long userId,
             @Parameter(description = "积分数量") @RequestParam Integer pointAmount,
             @Parameter(description = "描述") @RequestParam(required = false) String description) {
-        // 从 Session 获取当前登录用户 ID
-        Long fromUserId = 1L; // TODO: 实际应该从 SecurityUtils.getLoginUserId() 获取
+        // 从安全上下文中获取当前登录用户 ID
+        Long fromUserId = getLoginUserId();
         boolean result = agencyPointService.transferPoints(fromUserId, userId, pointAmount, description);
         return success(result);
     }

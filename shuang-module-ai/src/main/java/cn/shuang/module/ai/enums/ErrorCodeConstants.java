@@ -65,4 +65,13 @@ public interface ErrorCodeConstants {
     ErrorCode WORKFLOW_NOT_EXISTS = new ErrorCode(1_040_011_000, "工作流不存在");
     ErrorCode WORKFLOW_CODE_EXISTS = new ErrorCode(1_040_011_001, "工作流标识已存在");
 
+    // ========== AI 灵感案例 1-040-012-000 ==========
+    ErrorCode INSPIRATION_CASE_NOT_EXISTS = new ErrorCode(1_040_012_000, "灵感案例不存在");
+
+    // ========== AI 内容生成 1-040-013-000 ==========
+    ErrorCode AI_CONTENT_NOT_EXISTS = new ErrorCode(1_040_013_000, "内容生成记录不存在");
+    ErrorCode AI_CONTENT_PERMISSION_DENIED = new ErrorCode(1_040_013_001, "无权查看该内容生成记录");
+    ErrorCode AI_CONTENT_GENERATE_FAIL = new ErrorCode(1_040_013_002, "内容生成失败：{}");
+    ErrorCode AI_CONTENT_INSUFFICIENT_POINTS = new ErrorCode(1_040_013_003, "积分不足");
+
 }

@@ -276,4 +276,93 @@ public interface WuMoApi {
         }
     }
 
+    /**
+     * 视频分析 - 提取脚本/分析元素/生成提示词
+     *
+     * @param videoUrl 视频 URL
+     * @param analyzeType 分析类型：SCRIPT-提取脚本，ELEMENTS-分析元素，PROMPT-生成提示词
+     * @param model 模型名称
+     * @return 视频分析响应
+     */
+    VideoAnalyzeResponse analyzeVideo(String videoUrl, String analyzeType, String model);
+
+    /**
+     * 视频分析请求
+     */
+    @Builder
+    @Jacksonized
+    record VideoAnalyzeRequest(
+            /**
+             * 视频 URL
+             */
+            String videoUrl,
+            /**
+             * 分析类型：SCRIPT-提取脚本，ELEMENTS-分析元素，PROMPT-生成提示词
+             */
+            String analyzeType,
+            /**
+             * 模型名称
+             */
+            String model,
+            /**
+             * 扩展参数
+             */
+            Map<String, Object> extra
+    ) {
+    }
+
+    /**
+     * 视频分析响应
+     */
+    record VideoAnalyzeResponse(
+            /**
+             * 状态码：0 表示成功
+             */
+            Integer code,
+            /**
+             * 状态描述
+             */
+            String message,
+            /**
+             * 返回数据
+             */
+            AnalyzeData data
+    ) {
+        public record AnalyzeData(
+                /**
+                 * 任务 ID
+                 */
+                String taskId,
+                /**
+                 * 分析结果（JSON 格式）
+                 */
+                String result,
+                /**
+                 * 提取的脚本
+                 */
+                String script,
+                /**
+                 * 分析的元素（JSON 格式）
+                 */
+                String elements,
+                /**
+                 * 生成的提示词
+                 */
+                String prompt,
+                /**
+                 * 生成状态：PENDING-待处理，PROCESSING-处理中，SUCCESS-成功，FAILED-失败
+                 */
+                String status,
+                /**
+                 * 失败原因
+                 */
+                String failReason,
+                /**
+                 * 进度百分比
+                 */
+                Integer progress
+        ) {
+        }
+    }
+
 }

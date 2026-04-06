@@ -8,14 +8,17 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 import org.apache.ibatis.annotations.Update;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 /**
- * 积分钱包 Mapper
+ * 积分钱包 Mapper（用于会员积分管理）
  *
  * @author shuang-pro
  */
+@Mapper
+@Repository("pointsWalletMapper")
 public interface WalletMapper extends BaseMapper<WalletDO> {
 
     /**

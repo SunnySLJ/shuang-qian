@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import cn.shuang.framework.common.pojo.PageResult;
 import cn.shuang.module.ai.controller.admin.image.vo.AiImagePageReqVO;
 import cn.shuang.module.ai.dal.dataobject.image.AiImageDO;
+import cn.shuang.module.ai.dal.dataobject.model.AiApiKeyDO;
 import cn.shuang.module.ai.dal.dataobject.model.AiModelDO;
 import cn.shuang.module.ai.dal.mysql.image.AiImageMapper;
 import cn.shuang.module.ai.enums.image.AiImageStatusEnum;
@@ -13,6 +14,7 @@ import cn.shuang.module.ai.enums.video.AiVideoBizTypeEnum;
 import cn.shuang.module.ai.framework.ai.core.model.wumo.api.WuMoApi;
 import cn.shuang.module.ai.framework.ai.core.model.wumo.api.WuMoApiImpl;
 import cn.shuang.module.ai.framework.ai.core.model.wumo.api.WuMoApiConstants;
+import cn.shuang.module.ai.service.model.AiApiKeyService;
 import cn.shuang.module.ai.service.model.AiModelService;
 import cn.shuang.module.ai.service.video.AiVideoService;
 import cn.shuang.module.infra.api.file.FileApi;
@@ -38,6 +40,9 @@ public class AiVideoServiceImpl implements AiVideoService {
 
     @Resource
     private AiModelService modelService;
+
+    @Resource
+    private AiApiKeyService apiKeyService;
 
     @Resource
     private AiImageMapper imageMapper;
@@ -112,25 +117,27 @@ public class AiVideoServiceImpl implements AiVideoService {
 
     @Override
     public Long analyzeElements(Long userId, String videoUrl, Long modelId) {
-        log.info("[AiVideoService] 开始视频解析 - userId: {}, videoUrl: {}", userId, videoUrl);
+        log.info("[AiVideoService] 开始视频解析 - 分析元素 - userId: {}, videoUrl: {}", userId, videoUrl);
 
         // 1. 验证模型
         AiModelDO model = modelService.validateModel(modelId);
 
         // 2. 扣减积分
-        walletService.deductPoints(userId, 100, "视频解析");
+        walletService.deductPoints(userId, 50, "视频拆解 - 分析元素");
 
         // 3. 创建记录
         AiImageDO image = new AiImageDO();
         image.setUserId(userId);
         image.setModelId(model.getId());
-        image.setPrompt("[视频解析]" + videoUrl);
+        image.setPrompt("[视频拆解 - 分析元素]" + videoUrl);
+        image.setInputVideoUrl(videoUrl);
         image.setGenerationType(AiVideoBizTypeEnum.ANALYZE_ELEMENTS.getBizType());
         image.setStatus(AiImageStatusEnum.IN_PROGRESS.getStatus());
         image.setPublicStatus(false);
         imageMapper.insert(image);
 
-        // TODO: 实现视频解析逻辑
+        // 4. 异步执行视频分析
+        executeVideoAnalysis(image, videoUrl, "ELEMENTS", model);
 
         return image.getId();
     }
@@ -195,19 +202,21 @@ public class AiVideoServiceImpl implements AiVideoService {
         AiModelDO model = modelService.validateModel(modelId);
 
         // 2. 扣减积分
-        walletService.deductPoints(userId, 100, "视频拆解 - 提取脚本");
+        walletService.deductPoints(userId, 50, "视频拆解 - 提取脚本");
 
         // 3. 创建记录
         AiImageDO image = new AiImageDO();
         image.setUserId(userId);
         image.setModelId(model.getId());
         image.setPrompt("[提取脚本]" + videoUrl);
+        image.setInputVideoUrl(videoUrl);
         image.setGenerationType(AiVideoBizTypeEnum.EXTRACT_SCRIPT.getBizType());
         image.setStatus(AiImageStatusEnum.IN_PROGRESS.getStatus());
         image.setPublicStatus(false);
         imageMapper.insert(image);
 
-        // TODO: 实现视频脚本提取逻辑
+        // 4. 异步执行视频分析
+        executeVideoAnalysis(image, videoUrl, "SCRIPT", model);
 
         return image.getId();
     }
@@ -220,19 +229,21 @@ public class AiVideoServiceImpl implements AiVideoService {
         AiModelDO model = modelService.validateModel(modelId);
 
         // 2. 扣减积分
-        walletService.deductPoints(userId, 100, "视频拆解 - 生成提示词");
+        walletService.deductPoints(userId, 50, "视频拆解 - 生成提示词");
 
         // 3. 创建记录
         AiImageDO image = new AiImageDO();
         image.setUserId(userId);
         image.setModelId(model.getId());
         image.setPrompt("[生成提示词]" + videoUrl);
+        image.setInputVideoUrl(videoUrl);
         image.setGenerationType(AiVideoBizTypeEnum.GENERATE_PROMPT.getBizType());
         image.setStatus(AiImageStatusEnum.IN_PROGRESS.getStatus());
         image.setPublicStatus(false);
         imageMapper.insert(image);
 
-        // TODO: 实现提示词生成逻辑
+        // 4. 异步执行视频分析
+        executeVideoAnalysis(image, videoUrl, "PROMPT", model);
 
         return image.getId();
     }
@@ -296,6 +307,69 @@ public class AiVideoServiceImpl implements AiVideoService {
                     put("progress", response.data().progress());
                 }}));
         return true;
+    }
+
+    /**
+     * 异步执行视频分析
+     */
+    private void executeVideoAnalysis(AiImageDO image, String videoUrl, String analyzeType, AiModelDO model) {
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            try {
+                // 获取 WuMo API
+                WuMoApi api = getWuMoApi(model);
+
+                // 调用视频分析 API
+                WuMoApi.VideoAnalyzeRequest request = WuMoApi.VideoAnalyzeRequest.builder()
+                        .videoUrl(videoUrl)
+                        .analyzeType(analyzeType)
+                        .model(model.getModel())
+                        .build();
+                WuMoApi.VideoAnalyzeResponse response = api.analyzeVideo(videoUrl, analyzeType, model.getModel());
+
+                if (response.code() != 0 || response.data() == null) {
+                    throw new RuntimeException("API 调用失败：" + response.message());
+                }
+
+                // 更新 taskId
+                String taskId = response.data().taskId();
+                imageMapper.updateById(new AiImageDO().setId(image.getId()).setTaskId(taskId));
+                log.info("[AiVideoService] 视频分析任务提交成功 - id: {}, taskId: {}", image.getId(), taskId);
+
+                // 轮询等待完成
+                WuMoApi.TaskQueryResponse finalResponse = api.waitForTaskComplete(
+                        taskId, DEFAULT_MAX_WAIT_TIME, DEFAULT_POLL_INTERVAL);
+
+                if (finalResponse == null || finalResponse.data() == null) {
+                    throw new RuntimeException("任务状态查询失败");
+                }
+
+                // 处理结果
+                String status = finalResponse.data().status();
+                if ("SUCCESS".equals(status)) {
+                    // 保存分析结果
+                    Map<String, Object> options = new HashMap<>();
+                    options.put("analyzeType", analyzeType);
+                    options.put("result", finalResponse.data().resultUrl());
+                    imageMapper.updateById(new AiImageDO().setId(image.getId())
+                            .setStatus(AiImageStatusEnum.SUCCESS.getStatus())
+                            .setOptions(options)
+                            .setFinishTime(LocalDateTime.now()));
+                    log.info("[AiVideoService] 视频分析成功 - id: {}, result: {}", image.getId(), finalResponse.data().resultUrl());
+                } else {
+                    imageMapper.updateById(new AiImageDO().setId(image.getId())
+                            .setStatus(AiImageStatusEnum.FAIL.getStatus())
+                            .setErrorMessage(finalResponse.data().failReason())
+                            .setFinishTime(LocalDateTime.now()));
+                    log.warn("[AiVideoService] 视频分析失败 - id: {}, reason: {}", image.getId(), finalResponse.data().failReason());
+                }
+            } catch (Exception e) {
+                log.error("[AiVideoService] 视频分析异常 - id: {}", image.getId(), e);
+                imageMapper.updateById(new AiImageDO().setId(image.getId())
+                        .setStatus(AiImageStatusEnum.FAIL.getStatus())
+                        .setErrorMessage(e.getMessage())
+                        .setFinishTime(LocalDateTime.now()));
+            }
+        });
     }
 
     /**
@@ -377,12 +451,44 @@ public class AiVideoServiceImpl implements AiVideoService {
 
     /**
      * 获取 WuMo API 实例
-     * TODO: 需要从 AiApiKeyDO 获取真实的 apiKey，这里暂时使用硬编码
+     * 从数据库查询 API Key，如果找不到则使用环境变量 fallback
      */
     private WuMoApi getWuMoApi(AiModelDO model) {
-        // TODO: 需要通过 model.getKeyId() 查询 AiApiKeyDO 获取真实的 apiKey
-        String apiKey = "placeholder-api-key"; // 需要从 AiApiKeyDO 获取
+        String apiKey = null;
         String baseUrl = WuMoApiConstants.BASE_URL;
+
+        // 1. 尝试从数据库获取 API Key
+        if (model.getKeyId() != null) {
+            try {
+                AiApiKeyDO apiKeyDO = apiKeyService.getApiKey(model.getKeyId());
+                if (apiKeyDO != null && apiKeyDO.getApiKey() != null) {
+                    apiKey = apiKeyDO.getApiKey();
+                    if (apiKeyDO.getUrl() != null) {
+                        baseUrl = apiKeyDO.getUrl();
+                    }
+                    log.debug("[AiVideoService] 从数据库获取 API Key 成功 - keyId: {}", model.getKeyId());
+                }
+            } catch (Exception e) {
+                log.warn("[AiVideoService] 从数据库获取 API Key 失败 - keyId: {}", model.getKeyId(), e);
+            }
+        }
+
+        // 2. 如果数据库没有，使用环境变量 fallback
+        if (apiKey == null) {
+            apiKey = System.getenv("WUMO_API_KEY");
+            String envBaseUrl = System.getenv("WUMO_API_BASE_URL");
+            if (envBaseUrl != null && !envBaseUrl.isBlank()) {
+                baseUrl = envBaseUrl;
+            }
+            log.debug("[AiVideoService] 从环境变量获取 API Key - apiKey 是否为空：{}", apiKey == null);
+        }
+
+        // 3. 如果环境变量也没有，使用默认值（仅用于开发测试）
+        if (apiKey == null) {
+            apiKey = "XQuRvI6ZUoVg37e0PpcYDheRfY";
+            log.warn("[AiVideoService] 未配置 API Key，使用默认值（仅开发测试）");
+        }
+
         return new WuMoApiImpl(apiKey, baseUrl);
     }
 

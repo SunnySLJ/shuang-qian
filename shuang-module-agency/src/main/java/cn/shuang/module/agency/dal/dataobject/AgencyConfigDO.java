@@ -46,4 +46,13 @@ public class AgencyConfigDO extends BaseDO {
      */
     private Boolean enabled;
 
+    /**
+     * 检查是否启用
+     *
+     * @return 是否启用
+     */
+    public boolean isEnabled() {
+        return enabled != null && enabled;
+    }
+
 }

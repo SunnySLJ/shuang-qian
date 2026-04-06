@@ -242,6 +242,14 @@ yudao:
   wxa-subscribe-message:
     miniprogram-state: developer # 跳转小程序类型：开发版为 “developer”；体验版为 “trial”为；正式版为 “formal”
   tencent-lbs-key: TVDBZ-TDILD-4ON4B-PFDZA-RNLKH-VVF6E # QQ 地图的密钥 https://lbs.qq.com/service/staticV2/staticGuide/staticDoc
+  # AI 配置
+  ai:
+    wumo:
+      enable: true
+      api-key: ${WUMO_API_KEY:XQuRvI6ZUoVg37e0PpcYDheRfY}
+      base-url: ${WUMO_API_BASE_URL:https://api.wuyinkeji.com/api}
+      poll-interval: 5000 # 轮询间隔（毫秒）
+      max-wait-time: 300000 # 最大等待时间（毫秒），5 分钟
 
 justauth:
   enabled: true

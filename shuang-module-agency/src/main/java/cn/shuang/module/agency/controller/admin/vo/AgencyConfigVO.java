@@ -5,6 +5,11 @@ import lombok.Data;
 
 /**
  * 代理配置 VO
+ * <p>
+ * 用于管理代理系统的各项配置，包括：
+ * - 代理级别配置（一级代理、二级代理的要求和权益）
+ * - 分成比例配置（一级代理 20%、二级代理 8%）
+ * - 升级条件配置（直推人数要求、代理费金额）
  *
  * @author shuang-pro
  */
@@ -20,5 +25,17 @@ public class AgencyConfigVO {
 
     @Schema(description = "描述", example = "一级代理分成比例")
     private String description;
+
+    @Schema(description = "是否启用", example = "true")
+    private Boolean enabled;
+
+    /**
+     * 检查是否启用
+     *
+     * @return 是否启用
+     */
+    public boolean isEnabled() {
+        return enabled != null && enabled;
+    }
 
 }

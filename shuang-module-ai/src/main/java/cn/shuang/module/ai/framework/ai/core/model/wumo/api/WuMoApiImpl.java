@@ -195,4 +195,41 @@ public class WuMoApiImpl implements WuMoApi {
         return lastResponse;
     }
 
+    @Override
+    public VideoAnalyzeResponse analyzeVideo(String videoUrl, String analyzeType, String model) {
+        log.info("[WuMoApi] 开始调用视频分析 API - videoUrl: {}, analyzeType: {}", videoUrl, analyzeType);
+
+        try {
+            String url = baseUrl + WuMoApiConstants.VIDEO_ANALYZE_ENDPOINT;
+            VideoAnalyzeRequest request = VideoAnalyzeRequest.builder()
+                    .videoUrl(videoUrl)
+                    .analyzeType(analyzeType)
+                    .model(model)
+                    .build();
+            String jsonBody = JSONUtil.toJsonStr(request);
+
+            String responseBody = HttpRequest.post(url)
+                    .header("Authorization", "Bearer " + apiKey)
+                    .header("Content-Type", "application/json")
+                    .body(jsonBody)
+                    .timeout(120000) // 120 秒超时
+                    .execute()
+                    .body();
+
+            VideoAnalyzeResponse response = JSONUtil.toBean(responseBody, VideoAnalyzeResponse.class);
+            log.info("[WuMoApi] 视频分析 API 响应 - code: {}, message: {}, taskId: {}",
+                    response.code(), response.message(),
+                    response.data() != null ? response.data().taskId() : "N/A");
+
+            return response;
+        } catch (Exception e) {
+            log.error("[WuMoApi] 视频分析 API 调用失败", e);
+            return new VideoAnalyzeResponse(
+                    -1,
+                    "API 调用失败：" + e.getMessage(),
+                    null
+            );
+        }
+    }
+
 }

@@ -22,14 +22,14 @@ import java.util.List;
 public class WalletServiceImpl implements WalletService {
 
     @Resource
-    private WalletMapper walletMapper;
+    private WalletMapper pointsWalletMapper;
 
     @Resource
     private WalletTransactionMapper walletTransactionMapper;
 
     @Override
     public WalletDO getOrCreateWallet(Long userId) {
-        WalletDO wallet = walletMapper.selectByUserId(userId);
+        WalletDO wallet = pointsWalletMapper.selectByUserId(userId);
         if (wallet == null) {
             // 创建钱包
             wallet = WalletDO.builder()
@@ -42,7 +42,7 @@ public class WalletServiceImpl implements WalletService {
                     .totalGiven(0)
                     .totalCommission(0)
                     .build();
-            walletMapper.insert(wallet);
+            pointsWalletMapper.insert(wallet);
             log.info("[WalletService] 创建新钱包 - userId: {}", userId);
         }
         return wallet;
@@ -50,7 +50,7 @@ public class WalletServiceImpl implements WalletService {
 
     @Override
     public WalletDO getWallet(Long userId) {
-        return walletMapper.selectByUserId(userId);
+        return pointsWalletMapper.selectByUserId(userId);
     }
 
     @Override
@@ -66,13 +66,13 @@ public class WalletServiceImpl implements WalletService {
         WalletDO wallet = getOrCreateWallet(userId);
 
         // 2. 更新余额
-        int updated = walletMapper.addBalance(userId, amount);
+        int updated = pointsWalletMapper.addBalance(userId, amount);
         if (updated == 0) {
             throw new RuntimeException("更新钱包余额失败");
         }
 
         // 3. 重新查询获取新余额
-        wallet = walletMapper.selectByUserId(userId);
+        wallet = pointsWalletMapper.selectByUserId(userId);
 
         // 4. 记录流水
         WalletTransactionDO transaction = WalletTransactionDO.builder()
@@ -110,13 +110,13 @@ public class WalletServiceImpl implements WalletService {
         }
 
         // 3. 扣减余额
-        int updated = walletMapper.deductBalance(userId, amount);
+        int updated = pointsWalletMapper.deductBalance(userId, amount);
         if (updated == 0) {
             throw new RuntimeException("扣减积分失败，余额不足");
         }
 
         // 4. 重新查询获取新余额
-        wallet = walletMapper.selectByUserId(userId);
+        wallet = pointsWalletMapper.selectByUserId(userId);
 
         // 5. 记录流水（支出为负数）
         WalletTransactionDO transaction = WalletTransactionDO.builder()
@@ -145,7 +145,7 @@ public class WalletServiceImpl implements WalletService {
     @Override
     public List<WalletTransactionDO> getTransactions(Long userId, Integer page, Integer size) {
         int offset = (page - 1) * size;
-        return walletMapper.selectTransactions(userId, offset, size);
+        return pointsWalletMapper.selectTransactions(userId, offset, size);
     }
 
     @Override
@@ -160,12 +160,12 @@ public class WalletServiceImpl implements WalletService {
         // 更新余额和冻结余额
         String sql = "UPDATE pay_wallet SET balance = balance - #{amount}, frozen_balance = frozen_balance + #{amount}, update_time = NOW() " +
                      "WHERE user_id = #{userId} AND deleted = 0";
-        int updated = walletMapper.deductBalance(userId, amount);
+        int updated = pointsWalletMapper.deductBalance(userId, amount);
         if (updated == 0) {
             throw new RuntimeException("冻结积分失败");
         }
 
-        wallet = walletMapper.selectByUserId(userId);
+        wallet = pointsWalletMapper.selectByUserId(userId);
         log.info("[WalletService] 冻结积分 - userId: {}, amount: {}, balance: {}, frozen: {}",
                 userId, amount, wallet.getBalance(), wallet.getFrozenBalance());
 
@@ -186,12 +186,12 @@ public class WalletServiceImpl implements WalletService {
                      "WHERE user_id = #{userId} AND deleted = 0";
 
         // 使用原生 SQL 更新
-        int updated = walletMapper.addBalance(userId, amount);
+        int updated = pointsWalletMapper.addBalance(userId, amount);
         if (updated == 0) {
             throw new RuntimeException("解冻积分失败");
         }
 
-        wallet = walletMapper.selectByUserId(userId);
+        wallet = pointsWalletMapper.selectByUserId(userId);
         log.info("[WalletService] 解冻积分 - userId: {}, amount: {}, balance: {}, frozen: {}",
                 userId, amount, wallet.getBalance(), wallet.getFrozenBalance());
 

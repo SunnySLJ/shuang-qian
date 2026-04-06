@@ -3,13 +3,17 @@ package cn.shuang.module.pay.dal.mysql;
 import cn.shuang.module.pay.dal.dataobject.WalletTransactionDO;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Insert;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.springframework.stereotype.Repository;
 
 /**
  * 积分流水 Mapper
  *
  * @author shuang-pro
  */
+@Mapper
+@Repository("walletTransactionMapper")
 public interface WalletTransactionMapper extends BaseMapper<WalletTransactionDO> {
 
     /**

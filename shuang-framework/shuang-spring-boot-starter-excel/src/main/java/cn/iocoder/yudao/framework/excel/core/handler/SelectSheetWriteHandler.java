@@ -28,7 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static cn.iocoder.yudao.framework.common.util.collection.CollectionUtils.convertList;
+import static cn.shuang.framework.common.util.collection.CollectionUtils.convertList;
 
 /**
  * 基于固定 sheet 实现下拉框

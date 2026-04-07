@@ -19,7 +19,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.Objects;
 
-import static cn.iocoder.yudao.framework.redis.config.YudaoRedisAutoConfiguration.buildRedisSerializer;
+import static cn.shuang.framework.redis.config.YudaoRedisAutoConfiguration.buildRedisSerializer;
 
 /**
  * Cache 配置类，基于 Redis 实现

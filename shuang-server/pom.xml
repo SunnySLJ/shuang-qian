@@ -48,7 +48,27 @@
         <!-- 商城模块（包含分销/佣金功能） -->
         <dependency>
             <groupId>cn.shuang.boot</groupId>
-            <artifactId>shuang-module-mall</artifactId>
+            <artifactId>shuang-module-product</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.shuang.boot</groupId>
+            <artifactId>shuang-module-promotion</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.shuang.boot</groupId>
+            <artifactId>shuang-module-trade</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.shuang.boot</groupId>
+            <artifactId>shuang-module-trade-api</artifactId>
+            <version>${revision}</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.shuang.boot</groupId>
+            <artifactId>shuang-module-statistics</artifactId>
             <version>${revision}</version>
         </dependency>
 

@@ -3,6 +3,7 @@ package cn.shuang.module.agency.dal.dataobject;
 import cn.shuang.framework.mybatis.core.dataobject.BaseDO;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.*;
 
@@ -62,6 +63,11 @@ public class AgencyUserDO extends BaseDO {
     private Integer distributedPoints;
 
     /**
+     * 累计分成收入（积分，单位：分）
+     */
+    private Integer totalCommission;
+
+    /**
      * 直推人数
      */
     private Integer directInviteCount;
@@ -70,6 +76,12 @@ public class AgencyUserDO extends BaseDO {
      * 团队总人数
      */
     private Integer teamTotalCount;
+
+    /**
+     * 用户昵称（从 system_users 联查）
+     */
+    @TableField(exist = false)
+    private String nickname;
 
     /**
      * 代理费（分）

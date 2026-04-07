@@ -230,6 +230,7 @@ CREATE TABLE IF NOT EXISTS "system_users" (
     "post_ids" varchar(255) default null,
     "email" varchar(50) default '',
     "mobile" varchar(11) default '',
+    "invite_code" varchar(32) default null,
     "sex" tinyint default '0',
     "avatar" varchar(100) default '',
     "status" tinyint not null default '0',

@@ -36,6 +36,11 @@
             <artifactId>shuang-module-infra</artifactId>
             <version>${revision}</version>
         </dependency>
+        <dependency>
+            <groupId>cn.shuang.boot</groupId>
+            <artifactId>shuang-module-pay</artifactId>
+            <version>${revision}</version>
+        </dependency>
 
         <!-- 业务组件 -->
 

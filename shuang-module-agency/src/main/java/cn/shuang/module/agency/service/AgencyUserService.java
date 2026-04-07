@@ -1,5 +1,6 @@
 package cn.shuang.module.agency.service;
 
+import cn.shuang.framework.common.pojo.PageResult;
 import cn.shuang.module.agency.dal.dataobject.AgencyUserDO;
 
 import java.util.List;
@@ -62,5 +63,42 @@ public interface AgencyUserService {
      * @return 是否成功
      */
     boolean addPoints(Long userId, Integer points, Long orderId);
+
+    /**
+     * 分页查询代理用户列表
+     *
+     * @param nickname 用户昵称（可选）
+     * @param pageNo 页码
+     * @param pageSize 每页大小
+     * @return 分页结果
+     */
+    PageResult<AgencyUserDO> getPage(String nickname, Integer pageNo, Integer pageSize);
+
+    /**
+     * 根据 ID 查询代理用户
+     *
+     * @param id 主键 ID
+     * @return 代理用户信息
+     */
+    AgencyUserDO getById(Long id);
+
+    /**
+     * 分配积分给用户
+     *
+     * @param fromUserId 分配方用户 ID
+     * @param toUserId 接收方用户 ID
+     * @param pointAmount 积分数量
+     * @param description 描述
+     * @return 是否成功
+     */
+    boolean transferPoints(Long fromUserId, Long toUserId, Integer pointAmount, String description);
+
+    /**
+     * 查询用户的积分钱包
+     *
+     * @param userId 用户 ID
+     * @return 钱包信息 [可用积分，冻结积分，累计分配，累计获得]
+     */
+    int[] getWallet(Long userId);
 
 }

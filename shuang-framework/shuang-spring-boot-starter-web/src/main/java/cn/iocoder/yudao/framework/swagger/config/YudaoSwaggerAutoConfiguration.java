@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static cn.iocoder.yudao.framework.web.core.util.WebFrameworkUtils.HEADER_TENANT_ID;
+import static cn.shuang.framework.web.core.util.WebFrameworkUtils.HEADER_TENANT_ID;
 
 /**
  * Swagger 自动配置类，基于 OpenAPI + Springdoc 实现。

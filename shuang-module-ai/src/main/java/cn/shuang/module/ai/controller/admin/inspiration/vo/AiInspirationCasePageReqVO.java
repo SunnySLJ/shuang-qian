@@ -21,10 +21,13 @@ import static cn.shuang.framework.common.util.date.DateUtils.FORMAT_YEAR_MONTH_D
 @ToString(callSuper = true)
 public class AiInspirationCasePageReqVO extends PageParam {
 
-    @Schema(description = "行业分类", example = "电商")
-    private String category;
+    @Schema(description = "类型：banana/veo/grok/seedance", example = "veo")
+    private String type;
 
-    @Schema(description = "案例标题", example = "电商产品主图设计")
+    @Schema(description = "分类 ID", example = "5")
+    private Integer categoryId;
+
+    @Schema(description = "案例标题", example = "活字印刷")
     private String title;
 
     @Schema(description = "是否精选", example = "true")

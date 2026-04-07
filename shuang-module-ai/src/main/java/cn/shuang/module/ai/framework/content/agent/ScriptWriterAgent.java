@@ -4,6 +4,7 @@ import cn.shuang.module.ai.framework.content.context.ContentContext;
 import cn.shuang.module.ai.framework.content.context.ScriptResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /**
@@ -17,10 +18,11 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
+@ConditionalOnProperty(value = "yudao.ai.content-generation.enable", havingValue = "true")
 public class ScriptWriterAgent extends BaseContentAgent {
 
-    public ScriptWriterAgent(ChatClient.Builder chatClientBuilder) {
-        super("ScriptWriter", chatClientBuilder);
+    public ScriptWriterAgent(ChatClient chatClient) {
+        super("ScriptWriter", chatClient);
     }
 
     private static final String SYSTEM_PROMPT = """

@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,7 @@ import static cn.shuang.framework.security.core.util.SecurityFrameworkUtils.getL
 @RestController
 @RequestMapping("/app/ai/content")
 @Slf4j
+@ConditionalOnProperty(value = "yudao.ai.content-generation.enable", havingValue = "true")
 public class AppContentGenerationController {
 
     @Resource

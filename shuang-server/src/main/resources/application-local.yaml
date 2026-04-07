@@ -250,6 +250,9 @@ yudao:
       base-url: ${WUMO_API_BASE_URL:https://api.wuyinkeji.com/api}
       poll-interval: 5000 # 轮询间隔（毫秒）
       max-wait-time: 300000 # 最大等待时间（毫秒），5 分钟
+    # 内容生成模块配置
+    content-generation:
+      enable: false # 暂时禁用内容生成模块，避免 ChatModel Bean 冲突
 
 justauth:
   enabled: true

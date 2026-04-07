@@ -5,6 +5,7 @@ import cn.shuang.module.ai.framework.content.context.ContentPlanResult;
 import cn.shuang.module.ai.framework.content.context.ContentPlanResult.Storyboard;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -20,10 +21,11 @@ import java.util.List;
  */
 @Slf4j
 @Component
+@ConditionalOnProperty(value = "yudao.ai.content-generation.enable", havingValue = "true")
 public class ContentPlannerAgent extends BaseContentAgent {
 
-    public ContentPlannerAgent(ChatClient.Builder chatClientBuilder) {
-        super("ContentPlanner", chatClientBuilder);
+    public ContentPlannerAgent(ChatClient chatClient) {
+        super("ContentPlanner", chatClient);
     }
 
     private static final String SYSTEM_PROMPT = """

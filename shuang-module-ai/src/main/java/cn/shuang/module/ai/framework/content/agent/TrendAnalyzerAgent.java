@@ -4,6 +4,7 @@ import cn.shuang.module.ai.framework.content.context.ContentContext;
 import cn.shuang.module.ai.framework.content.context.TrendAnalysisResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -20,10 +21,11 @@ import java.util.Collections;
  */
 @Slf4j
 @Component
+@ConditionalOnProperty(value = "yudao.ai.content-generation.enable", havingValue = "true")
 public class TrendAnalyzerAgent extends BaseContentAgent {
 
-    public TrendAnalyzerAgent(ChatClient.Builder chatClientBuilder) {
-        super("TrendAnalyzer", chatClientBuilder);
+    public TrendAnalyzerAgent(ChatClient chatClient) {
+        super("TrendAnalyzer", chatClient);
     }
 
     private static final String SYSTEM_PROMPT = """

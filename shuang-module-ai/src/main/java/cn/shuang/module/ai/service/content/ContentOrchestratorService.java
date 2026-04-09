@@ -5,6 +5,7 @@ import cn.shuang.module.ai.framework.content.context.*;
 import cn.shuang.module.ai.framework.content.result.ContentGenerationResult;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 /**
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 @Service
 @RequiredArgsConstructor
+@ConditionalOnProperty(value = "yudao.ai.content-generation.enable", havingValue = "true")
 public class ContentOrchestratorService {
 
     private final TrendAnalyzerAgent trendAnalyzer;

@@ -1,5 +1,6 @@
 package cn.shuang.module.ai.controller.admin.inspiration;
 
+import cn.shuang.framework.common.pojo.CommonResult;
 import cn.shuang.framework.common.pojo.PageResult;
 import cn.shuang.module.ai.controller.admin.inspiration.vo.*;
 import cn.shuang.module.ai.dal.dataobject.inspiration.AiInspirationCaseDO;
@@ -25,7 +26,7 @@ import static cn.shuang.framework.common.util.collection.CollectionUtils.convert
  */
 @Tag(name = "管理后台 - AI 灵感案例")
 @RestController
-@RequestMapping("/ai/inspiration-case")
+@RequestMapping("/admin/ai/inspiration-case")
 @Validated
 public class AiInspirationCaseController {
 
@@ -34,61 +35,59 @@ public class AiInspirationCaseController {
 
     @PostMapping("/create")
     @Operation(summary = "创建灵感案例")
-    public Long createCase(@Validated @RequestBody AiInspirationCaseCreateReqVO createReqVO) {
-        return inspirationCaseService.createCase(createReqVO);
+    public CommonResult<Long> createCase(@Validated @RequestBody AiInspirationCaseCreateReqVO createReqVO) {
+        return success(inspirationCaseService.createCase(createReqVO));
     }
 
     @PutMapping("/update")
     @Operation(summary = "更新灵感案例")
-    public void updateCase(@Validated @RequestBody AiInspirationCaseUpdateReqVO updateReqVO) {
+    public CommonResult<Boolean> updateCase(@Validated @RequestBody AiInspirationCaseUpdateReqVO updateReqVO) {
         inspirationCaseService.updateCase(updateReqVO);
+        return success(true);
     }
 
     @DeleteMapping("/delete")
     @Operation(summary = "删除灵感案例")
     @Parameter(name = "id", description = "案例 ID", required = true)
-    public void deleteCase(@RequestParam("id") Long id) {
+    public CommonResult<Boolean> deleteCase(@RequestParam("id") Long id) {
         inspirationCaseService.deleteCase(id);
+        return success(true);
     }
 
     @GetMapping("/get")
     @Operation(summary = "获取灵感案例详情")
     @Parameter(name = "id", description = "案例 ID", required = true)
-    public AiInspirationCaseRespVO getCase(@RequestParam("id") Long id) {
+    public CommonResult<AiInspirationCaseRespVO> getCase(@RequestParam("id") Long id) {
         AiInspirationCaseDO inspirationCase = inspirationCaseService.getCase(id);
-        // 增加浏览次数
-        if (inspirationCase != null) {
-            inspirationCaseService.incrementViewCount(id);
-        }
-        return convertToRespVO(inspirationCase);
+        return success(convertToRespVO(inspirationCase));
     }
 
     @GetMapping("/page")
     @Operation(summary = "获取灵感案例分页")
-    public PageResult<AiInspirationCaseRespVO> getPage(AiInspirationCasePageReqVO pageReqVO) {
+    public CommonResult<PageResult<AiInspirationCaseRespVO>> getPage(AiInspirationCasePageReqVO pageReqVO) {
         PageResult<AiInspirationCaseDO> pageResult = inspirationCaseService.getPage(pageReqVO);
         List<AiInspirationCaseRespVO> respVOList = convertList(pageResult.getList(), this::convertToRespVO);
-        return new PageResult<>(respVOList, pageResult.getTotal());
+        return success(new PageResult<>(respVOList, pageResult.getTotal()));
     }
 
     @GetMapping("/list-by-category")
     @Operation(summary = "根据分类获取灵感案例列表")
-    @Parameter(name = "category", description = "行业分类", required = true)
+    @Parameter(name = "categoryId", description = "分类 ID", required = true)
     @Parameter(name = "limit", description = "数量限制", example = "10")
-    public List<AiInspirationCaseRespVO> getListByCategory(
-            @RequestParam("category") String category,
+    public CommonResult<List<AiInspirationCaseRespVO>> getListByCategory(
+            @RequestParam("categoryId") Integer categoryId,
             @RequestParam(value = "limit", defaultValue = "10") Integer limit) {
-        List<AiInspirationCaseDO> list = inspirationCaseService.getListByCategory(category, limit);
-        return convertList(list, this::convertToRespVO);
+        List<AiInspirationCaseDO> list = inspirationCaseService.getListByCategoryId(categoryId, limit);
+        return success(convertList(list, this::convertToRespVO));
     }
 
     @GetMapping("/featured-list")
     @Operation(summary = "获取精选灵感案例列表")
     @Parameter(name = "limit", description = "数量限制", example = "10")
-    public List<AiInspirationCaseRespVO> getFeaturedList(
+    public CommonResult<List<AiInspirationCaseRespVO>> getFeaturedList(
             @RequestParam(value = "limit", defaultValue = "10") Integer limit) {
         List<AiInspirationCaseDO> list = inspirationCaseService.getFeaturedList(limit);
-        return convertList(list, this::convertToRespVO);
+        return success(convertList(list, this::convertToRespVO));
     }
 
     /**
@@ -103,17 +102,22 @@ public class AiInspirationCaseController {
         }
         AiInspirationCaseRespVO respVO = new AiInspirationCaseRespVO();
         respVO.setId(inspirationCase.getId());
-        respVO.setCategory(inspirationCase.getCategory());
+        respVO.setType(inspirationCase.getType());
+        respVO.setCategoryId(inspirationCase.getCategoryId());
         respVO.setTitle(inspirationCase.getTitle());
-        respVO.setDescription(inspirationCase.getDescription());
-        respVO.setCoverImageUrl(inspirationCase.getCoverImageUrl());
+        respVO.setContent(inspirationCase.getContent());
+        respVO.setImage(inspirationCase.getImage());
+        respVO.setImageFirst(inspirationCase.getImageFirst());
+        respVO.setImageTail(inspirationCase.getImageTail());
         respVO.setVideoUrl(inspirationCase.getVideoUrl());
-        respVO.setPromptTemplate(inspirationCase.getPromptTemplate());
+        respVO.setDuration(inspirationCase.getDuration());
+        respVO.setLikeCount(inspirationCase.getLikeCount());
         respVO.setViewCount(inspirationCase.getViewCount());
         respVO.setUseCount(inspirationCase.getUseCount());
+        respVO.setLabel(inspirationCase.getLabel());
+        respVO.setIcon(inspirationCase.getIcon());
         respVO.setFeatured(inspirationCase.getFeatured());
         respVO.setSortOrder(inspirationCase.getSortOrder());
-        respVO.setExtraData(inspirationCase.getExtraData());
         respVO.setCreateTime(inspirationCase.getCreateTime());
         return respVO;
     }

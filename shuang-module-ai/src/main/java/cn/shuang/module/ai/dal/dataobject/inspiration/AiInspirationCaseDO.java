@@ -2,25 +2,25 @@ package cn.shuang.module.ai.dal.dataobject.inspiration;
 
 import cn.shuang.framework.mybatis.core.dataobject.BaseDO;
 import com.baomidou.mybatisplus.annotation.KeySequence;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import lombok.Data;
-
-import java.util.Map;
+import lombok.EqualsAndHashCode;
+import lombok.experimental.Accessors;
 
 /**
  * AI 灵感案例 DO
  * <p>
- * 用于存储行业案例库，包括电商、大健康、工厂、探店等行业的优质案例
- * 用户可以参考这些案例生成类似的 AI 内容
+ * 用于存储灵感案例信息，包括类型、分类、标题、提示词内容、视频等
+ * 数据来源参考 timarsky.com 的灵感案例库
  *
  * @author shuang-pro
  */
 @TableName(value = "ai_inspiration_case", autoResultMap = true)
 @KeySequence("ai_inspiration_case_seq")
 @Data
+@EqualsAndHashCode(callSuper = true)
+@Accessors(chain = true)
 public class AiInspirationCaseDO extends BaseDO {
 
     /**
@@ -30,11 +30,17 @@ public class AiInspirationCaseDO extends BaseDO {
     private Long id;
 
     /**
-     * 行业分类
-     * <p>
-     * 例如：电商、大健康、工厂、探店、宠物、美食、AI 数字人等
+     * 类型：banana(香蕉生图)/veo(威尔视频)/grok(马克视频)/seedance(索拉视频)
      */
-    private String category;
+    private String type;
+
+    /**
+     * 分类 ID
+     * <p>
+     * 对应 ai_inspiration_category 表的 id
+     * 0=全部, 5=电商, 15=大健康, 16=工厂, 17=励志演讲等
+     */
+    private Integer categoryId;
 
     /**
      * 案例标题
@@ -42,38 +48,71 @@ public class AiInspirationCaseDO extends BaseDO {
     private String title;
 
     /**
-     * 案例描述
+     * 提示词内容
+     * <p>
+     * 用于 AI 生成的提示词模板，用户可以参考或直接使用
      */
-    private String description;
+    private String content;
 
     /**
      * 封面图 URL
      */
-    private String coverImageUrl;
+    private String image;
 
     /**
-     * 演示视频 URL
+     * 首帧图 URL
+     * <p>
+     * 用于视频生成的首帧参考图
+     */
+    private String imageFirst;
+
+    /**
+     * 尾帧图 URL
+     * <p>
+     * 用于视频生成的尾帧参考图
+     */
+    private String imageTail;
+
+    /**
+     * 视频 URL
      */
     private String videoUrl;
 
     /**
-     * 提示词模板
-     * <p>
-     * 用户可以直接使用或修改此模板进行 AI 生成
+     * 视频时长（秒）
      */
-    private String promptTemplate;
+    private Integer duration;
 
     /**
-     * 浏览次数
+     * 点赞数
+     */
+    private Integer likeCount;
+
+    /**
+     * 浏览数
      */
     private Integer viewCount;
 
     /**
-     * 使用次数
+     * 使用数
      * <p>
      * 用户基于此案例生成内容的次数
      */
     private Integer useCount;
+
+    /**
+     * 标签
+     * <p>
+     * 例如：威尔视频、香蕉生图、马克视频等
+     */
+    private String label;
+
+    /**
+     * 图标 URL
+     * <p>
+     * 对应类型的图标，例如 https://cdn.fenshen123.com/icons/grok.png
+     */
+    private String icon;
 
     /**
      * 是否精选
@@ -84,11 +123,5 @@ public class AiInspirationCaseDO extends BaseDO {
      * 排序（越小越前）
      */
     private Integer sortOrder;
-
-    /**
-     * 扩展数据
-     */
-    @TableField(typeHandler = JacksonTypeHandler.class)
-    private Map<String, Object> extraData;
 
 }

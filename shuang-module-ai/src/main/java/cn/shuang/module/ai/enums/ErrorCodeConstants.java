@@ -74,4 +74,20 @@ public interface ErrorCodeConstants {
     ErrorCode AI_CONTENT_GENERATE_FAIL = new ErrorCode(1_040_013_002, "内容生成失败：{}");
     ErrorCode AI_CONTENT_INSUFFICIENT_POINTS = new ErrorCode(1_040_013_003, "积分不足");
 
+    // ========== AI 教程视频 1-040-014-000 ==========
+    ErrorCode TUTORIAL_CATEGORY_NOT_EXISTS = new ErrorCode(1_040_014_000, "教程分类不存在");
+    ErrorCode TUTORIAL_VIDEO_NOT_EXISTS = new ErrorCode(1_040_014_001, "教程视频不存在");
+
+    // ========== AI 用户资产 1-040-015-000 ==========
+    ErrorCode ASSET_NOT_EXISTS = new ErrorCode(1_040_015_000, "资产不存在");
+    ErrorCode ASSET_PERMISSION_DENIED = new ErrorCode(1_040_015_001, "无权访问该资产");
+    ErrorCode MATERIAL_GROUP_NOT_EXISTS = new ErrorCode(1_040_015_002, "素材分组不存在");
+    ErrorCode MATERIAL_GROUP_PERMISSION_DENIED = new ErrorCode(1_040_015_003, "无权访问该素材分组");
+
+    // ========== AI 视频生成 1-040-016-000 ==========
+    ErrorCode VIDEO_NOT_EXISTS = new ErrorCode(1_040_016_000, "视频记录不存在");
+    ErrorCode VIDEO_GENERATE_FAIL = new ErrorCode(1_040_016_001, "视频生成失败：{}");
+    ErrorCode VIDEO_ANALYZE_FAIL = new ErrorCode(1_040_016_002, "视频分析失败：{}");
+    ErrorCode VIDEO_SYNC_FAIL = new ErrorCode(1_040_016_003, "视频状态同步失败");
+
 }

@@ -33,14 +33,20 @@ public class AiInspirationCaseServiceImpl implements AiInspirationCaseService {
     @Transactional(rollbackFor = Exception.class)
     public Long createCase(AiInspirationCaseCreateReqVO createReqVO) {
         AiInspirationCaseDO inspirationCase = new AiInspirationCaseDO()
-                .setCategory(createReqVO.getCategory())
+                .setType(createReqVO.getType())
+                .setCategoryId(createReqVO.getCategoryId())
                 .setTitle(createReqVO.getTitle())
-                .setDescription(createReqVO.getDescription())
-                .setCoverImageUrl(createReqVO.getCoverImageUrl())
+                .setContent(createReqVO.getContent())
+                .setImage(createReqVO.getImage())
+                .setImageFirst(createReqVO.getImageFirst())
+                .setImageTail(createReqVO.getImageTail())
                 .setVideoUrl(createReqVO.getVideoUrl())
-                .setPromptTemplate(createReqVO.getPromptTemplate())
+                .setDuration(createReqVO.getDuration())
+                .setLabel(createReqVO.getLabel())
+                .setIcon(createReqVO.getIcon())
                 .setFeatured(createReqVO.getFeatured() != null ? createReqVO.getFeatured() : false)
                 .setSortOrder(createReqVO.getSortOrder())
+                .setLikeCount(0)
                 .setViewCount(0)
                 .setUseCount(0);
         inspirationCaseMapper.insert(inspirationCase);
@@ -56,12 +62,17 @@ public class AiInspirationCaseServiceImpl implements AiInspirationCaseService {
 
         AiInspirationCaseDO updateObj = new AiInspirationCaseDO()
                 .setId(updateReqVO.getId())
-                .setCategory(updateReqVO.getCategory())
+                .setType(updateReqVO.getType())
+                .setCategoryId(updateReqVO.getCategoryId())
                 .setTitle(updateReqVO.getTitle())
-                .setDescription(updateReqVO.getDescription())
-                .setCoverImageUrl(updateReqVO.getCoverImageUrl())
+                .setContent(updateReqVO.getContent())
+                .setImage(updateReqVO.getImage())
+                .setImageFirst(updateReqVO.getImageFirst())
+                .setImageTail(updateReqVO.getImageTail())
                 .setVideoUrl(updateReqVO.getVideoUrl())
-                .setPromptTemplate(updateReqVO.getPromptTemplate())
+                .setDuration(updateReqVO.getDuration())
+                .setLabel(updateReqVO.getLabel())
+                .setIcon(updateReqVO.getIcon())
                 .setFeatured(updateReqVO.getFeatured())
                 .setSortOrder(updateReqVO.getSortOrder());
         inspirationCaseMapper.updateById(updateObj);
@@ -84,23 +95,27 @@ public class AiInspirationCaseServiceImpl implements AiInspirationCaseService {
 
     @Override
     public PageResult<AiInspirationCaseDO> getPage(AiInspirationCasePageReqVO pageReqVO) {
-        return inspirationCaseMapper.selectPage(pageReqVO,
-                new cn.shuang.framework.mybatis.core.query.LambdaQueryWrapperX<AiInspirationCaseDO>()
-                        .likeIfPresent(AiInspirationCaseDO::getTitle, pageReqVO.getTitle())
-                        .eqIfPresent(AiInspirationCaseDO::getCategory, pageReqVO.getCategory())
-                        .eqIfPresent(AiInspirationCaseDO::getFeatured, pageReqVO.getFeatured())
-                        .betweenIfPresent(AiInspirationCaseDO::getCreateTime, pageReqVO.getCreateTimeStartTime(), pageReqVO.getCreateTimeEndTime())
-                        .orderByAsc(AiInspirationCaseDO::getSortOrder));
+        return inspirationCaseMapper.selectPage(pageReqVO);
     }
 
     @Override
-    public List<AiInspirationCaseDO> getListByCategory(String category, Integer limit) {
-        return inspirationCaseMapper.selectListByCategory(category, limit);
+    public List<AiInspirationCaseDO> getListByCategoryId(Integer categoryId, Integer limit) {
+        return inspirationCaseMapper.selectListByCategoryId(categoryId, limit);
+    }
+
+    @Override
+    public List<AiInspirationCaseDO> getListByType(String type, Integer limit) {
+        return inspirationCaseMapper.selectListByType(type, limit);
     }
 
     @Override
     public List<AiInspirationCaseDO> getFeaturedList(Integer limit) {
-        return inspirationCaseMapper.selectListWithSort(null, true).stream().limit(limit).toList();
+        return inspirationCaseMapper.selectFeaturedList(limit);
+    }
+
+    @Override
+    public List<AiInspirationCaseDO> getAllList(Integer limit) {
+        return inspirationCaseMapper.selectAllList(limit);
     }
 
     @Override
@@ -113,6 +128,11 @@ public class AiInspirationCaseServiceImpl implements AiInspirationCaseService {
     @Transactional(rollbackFor = Exception.class)
     public void incrementUseCount(Long id) {
         inspirationCaseMapper.incrementUseCount(id);
+    }
+
+    @Override
+    public List<AiInspirationCaseDO> getAllCases() {
+        return inspirationCaseMapper.selectList();
     }
 
     /**

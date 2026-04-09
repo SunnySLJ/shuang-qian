@@ -5,6 +5,7 @@ import cn.shuang.module.ai.framework.content.context.CriticResult;
 import cn.shuang.module.ai.framework.content.context.CriticResult.CriticDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -22,10 +23,11 @@ import java.util.List;
  */
 @Slf4j
 @Component
+@ConditionalOnProperty(value = "yudao.ai.content-generation.enable", havingValue = "true")
 public class QualityCriticAgent extends BaseContentAgent {
 
-    public QualityCriticAgent(ChatClient.Builder chatClientBuilder) {
-        super("QualityCritic", chatClientBuilder);
+    public QualityCriticAgent(ChatClient chatClient) {
+        super("QualityCritic", chatClient);
     }
 
     private static final String SYSTEM_PROMPT = """

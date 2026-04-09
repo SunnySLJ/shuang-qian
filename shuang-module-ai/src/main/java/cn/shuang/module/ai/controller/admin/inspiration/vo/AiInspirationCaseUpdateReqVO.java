@@ -17,23 +17,38 @@ public class AiInspirationCaseUpdateReqVO {
     @NotNull(message = "案例 ID 不能为空")
     private Long id;
 
-    @Schema(description = "行业分类", example = "电商")
-    private String category;
+    @Schema(description = "类型：banana/veo/grok/seedance", example = "veo")
+    private String type;
 
-    @Schema(description = "案例标题", example = "电商产品主图设计")
+    @Schema(description = "分类 ID", example = "5")
+    private Integer categoryId;
+
+    @Schema(description = "案例标题", example = "活字印刷")
     private String title;
 
-    @Schema(description = "案例描述", example = "适用于淘宝/拼多多/抖音小店商品主图")
-    private String description;
+    @Schema(description = "提示词内容", example = "广角镜头展现了一位神态安详的僧人...")
+    private String content;
 
-    @Schema(description = "封面图 URL", example = "https://example.com/cover.jpg")
-    private String coverImageUrl;
+    @Schema(description = "封面图 URL", example = "https://cdn.fenshen123.com/80/ec1a53231ea9d09f085cf07d0cafc8.png")
+    private String image;
 
-    @Schema(description = "演示视频 URL", example = "https://example.com/demo.mp4")
+    @Schema(description = "首帧图 URL", example = "https://cdn.fenshen123.com/80/ec1a53231ea9d09f085cf07d0cafc8.png")
+    private String imageFirst;
+
+    @Schema(description = "尾帧图 URL", example = "")
+    private String imageTail;
+
+    @Schema(description = "视频 URL", example = "https://cdn.fenshen123.com/5b/2f38a9503b4fb21d4c33a6b69a4cf4.mp4")
     private String videoUrl;
 
-    @Schema(description = "提示词模板", example = "一个精致的产品展示台，专业摄影灯光，4k 画质")
-    private String promptTemplate;
+    @Schema(description = "视频时长（秒）", example = "8")
+    private Integer duration;
+
+    @Schema(description = "标签", example = "威尔视频")
+    private String label;
+
+    @Schema(description = "图标 URL", example = "https://cdn.fenshen123.com/icons/grok.png")
+    private String icon;
 
     @Schema(description = "是否精选", example = "true")
     private Boolean featured;

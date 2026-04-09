@@ -25,28 +25,48 @@ public interface AiInspirationCaseMapper extends BaseMapperX<AiInspirationCaseDO
     default PageResult<AiInspirationCaseDO> selectPage(AiInspirationCasePageReqVO reqVO) {
         return selectPage(reqVO, new LambdaQueryWrapperX<AiInspirationCaseDO>()
                 .likeIfPresent(AiInspirationCaseDO::getTitle, reqVO.getTitle())
-                .eqIfPresent(AiInspirationCaseDO::getCategory, reqVO.getCategory())
+                .eqIfPresent(AiInspirationCaseDO::getType, reqVO.getType())
+                .eqIfPresent(AiInspirationCaseDO::getCategoryId, reqVO.getCategoryId())
                 .eqIfPresent(AiInspirationCaseDO::getFeatured, reqVO.getFeatured())
                 .betweenIfPresent(AiInspirationCaseDO::getCreateTime, reqVO.getCreateTimeStartTime(), reqVO.getCreateTimeEndTime())
                 .orderByAsc(AiInspirationCaseDO::getSortOrder));
     }
 
     /**
-     * 获取灵感案例列表（带排序）
+     * 根据分类 ID 获取灵感案例列表
      */
-    default List<AiInspirationCaseDO> selectListWithSort(Integer sortOrder, Boolean featured) {
+    default List<AiInspirationCaseDO> selectListByCategoryId(Integer categoryId, Integer limit) {
         return selectList(new LambdaQueryWrapperX<AiInspirationCaseDO>()
-                .eqIfPresent(AiInspirationCaseDO::getFeatured, featured)
-                .ltIfPresent(AiInspirationCaseDO::getSortOrder, sortOrder)
-                .orderByAsc(AiInspirationCaseDO::getSortOrder));
+                .eq(AiInspirationCaseDO::getCategoryId, categoryId)
+                .orderByAsc(AiInspirationCaseDO::getSortOrder)
+                .last("LIMIT " + limit));
     }
 
     /**
-     * 根据分类获取灵感案例列表
+     * 根据类型获取灵感案例列表
      */
-    default List<AiInspirationCaseDO> selectListByCategory(String category, Integer limit) {
+    default List<AiInspirationCaseDO> selectListByType(String type, Integer limit) {
         return selectList(new LambdaQueryWrapperX<AiInspirationCaseDO>()
-                .eq(AiInspirationCaseDO::getCategory, category)
+                .eq(AiInspirationCaseDO::getType, type)
+                .orderByAsc(AiInspirationCaseDO::getSortOrder)
+                .last("LIMIT " + limit));
+    }
+
+    /**
+     * 获取精选灵感案例列表
+     */
+    default List<AiInspirationCaseDO> selectFeaturedList(Integer limit) {
+        return selectList(new LambdaQueryWrapperX<AiInspirationCaseDO>()
+                .eq(AiInspirationCaseDO::getFeatured, true)
+                .orderByAsc(AiInspirationCaseDO::getSortOrder)
+                .last("LIMIT " + limit));
+    }
+
+    /**
+     * 获取所有灵感案例列表（按排序）
+     */
+    default List<AiInspirationCaseDO> selectAllList(Integer limit) {
+        return selectList(new LambdaQueryWrapperX<AiInspirationCaseDO>()
                 .orderByAsc(AiInspirationCaseDO::getSortOrder)
                 .last("LIMIT " + limit));
     }

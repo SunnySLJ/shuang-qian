@@ -28,9 +28,9 @@ public abstract class BaseContentAgent {
      */
     protected final ChatClient chatClient;
 
-    public BaseContentAgent(String name, ChatClient.Builder chatClientBuilder) {
+    public BaseContentAgent(String name, ChatClient chatClient) {
         this.name = name;
-        this.chatClient = chatClientBuilder.build();
+        this.chatClient = chatClient;
     }
 
     /**

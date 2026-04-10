@@ -120,7 +120,7 @@
                 </div>
                 <div class="pay-item">
                   <span class="pay-item-label">获得积分</span>
-                  <span class="pay-item-value points-highlight">+{{ selectedPkg?.points + (selectedPkg?.bonusPoints || 0) }}</span>
+                  <span class="pay-item-value points-highlight">+{{ (selectedPkg?.points || 0) + (selectedPkg?.bonusPoints || 0) }}</span>
                 </div>
                 <div class="pay-item total">
                   <span class="pay-item-label">应付金额</span>
@@ -153,6 +153,7 @@ import { ref, computed } from 'vue'
 import { cosmicIcons } from '@/utils/cosmicIcons'
 import { useAppStore, useRechargeStore } from '@/stores/app'
 import { storeToRefs } from 'pinia'
+import type { RechargePackage } from '@/types'
 
 const icons = cosmicIcons
 
@@ -164,7 +165,7 @@ const { packages } = storeToRefs(rechargeStore)
 
 const customPoints = ref(100)
 const payModalOpen = ref(false)
-const selectedPkg = ref<(typeof packages)[0] | null>(null)
+const selectedPkg = ref<RechargePackage | null>(null)
 const payMethod = ref('wechat')
 
 const customAmount = computed(() => {
@@ -183,7 +184,7 @@ const payMethods = [
   { id: 'card', name: '银行卡', icon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>` },
 ]
 
-function selectPackage(pkg: (typeof packages)[0]) {
+function selectPackage(pkg: RechargePackage) {
   selectedPkg.value = pkg
   payModalOpen.value = true
 }

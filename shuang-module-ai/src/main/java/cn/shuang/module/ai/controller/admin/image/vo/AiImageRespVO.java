@@ -78,4 +78,7 @@ public class AiImageRespVO {
     @Schema(description = "任务编号")
     private String taskId;
 
+    @Schema(description = "视频拆解等业务扩展字段（含 analyzeType、result 等）")
+    private Map<String, Object> bizOptions;
+
 }

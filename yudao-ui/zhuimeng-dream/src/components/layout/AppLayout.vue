@@ -192,6 +192,14 @@ const mainNav = [
     subGradient: true,
   },
   {
+    shortLabel: '爆款',
+    path: '/ai/video/analyze',
+    icon: icons.analyze,
+    group: '创作',
+    subBadge: '拆解',
+    subGradient: true,
+  },
+  {
     shortLabel: '做图',
     path: '/ai/image',
     icon: icons.image,
@@ -236,6 +244,7 @@ const mainNav = [
 const pageInfoMap: Record<string, { label: string; group: string }> = {
   '/dashboard': { label: '工作台', group: '首页' },
   '/inspiration': { label: '灵感广场', group: '创作' },
+  '/ai/video/analyze': { label: '一键拆解视频', group: '创作' },
   '/ai/image': { label: 'AI 做图', group: 'AI 创作' },
   '/ai/video': { label: 'AI 视频', group: 'AI 创作' },
   '/ai/history': { label: '我的作品', group: 'AI 创作' },
@@ -246,7 +255,12 @@ const pageInfoMap: Record<string, { label: string; group: string }> = {
 const currentPageInfo = computed(() => pageInfoMap[route.path] || { label: '页面', group: '追梦Dream' })
 
 function isActive(path: string): boolean {
-  return route.path === path || route.path.startsWith(path + '/')
+  if (route.path === path) return true
+  // 「AI 视频」与「爆款拆解」路径前缀相同，需区分
+  if (path === '/ai/video') {
+    return route.path.startsWith('/ai/video/') && !route.path.startsWith('/ai/video/analyze')
+  }
+  return route.path.startsWith(path + '/')
 }
 
 function toggleUserMenu() {

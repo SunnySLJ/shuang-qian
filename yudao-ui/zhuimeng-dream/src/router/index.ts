@@ -38,6 +38,12 @@ const routes: RouteRecordRaw[] = [
     meta: { requiresAuth: true, layout: 'app' },
   },
   {
+    path: '/ai/video/analyze',
+    name: 'ai-video-analyze',
+    component: () => import('@/views/ai/VideoAnalyzePage.vue'),
+    meta: { requiresAuth: true, layout: 'app' },
+  },
+  {
     path: '/ai/history',
     name: 'ai-history',
     component: () => import('@/views/ai/HistoryPage.vue'),

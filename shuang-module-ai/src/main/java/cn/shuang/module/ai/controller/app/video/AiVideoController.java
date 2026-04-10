@@ -17,7 +17,9 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
+
 import java.util.List;
+import java.util.Objects;
 
 import static cn.shuang.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
 import static cn.shuang.framework.common.pojo.CommonResult.success;
@@ -116,18 +118,25 @@ public class AiVideoController {
     @Operation(summary = "获取视频详情")
     public CommonResult<AiImageRespVO> getVideoDetail(
             @Parameter(description = "记录 ID") @RequestParam Long id) {
+        Long userId = getLoginUserId();
         AiImageDO image = videoService.getVideoDetail(id);
-        if (image == null) {
+        if (image == null || !Objects.equals(image.getUserId(), userId)) {
             return CommonResult.error(1, "记录不存在");
         }
         AiImageRespVO vo = new AiImageRespVO();
         vo.setId(image.getId());
+        vo.setUserId(image.getUserId());
         vo.setPrompt(image.getPrompt());
         vo.setStatus(image.getStatus());
         vo.setPicUrl(image.getPicUrl());
         vo.setOutputUrl(image.getOutputUrl());
         vo.setGenerationType(image.getGenerationType());
         vo.setErrorMessage(image.getErrorMessage());
+        vo.setInputVideoUrl(image.getInputVideoUrl());
+        vo.setCreateTime(image.getCreateTime());
+        vo.setFinishTime(image.getFinishTime());
+        vo.setTaskId(image.getTaskId());
+        vo.setBizOptions(image.getOptions());
         return success(vo);
     }
 

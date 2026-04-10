@@ -124,7 +124,7 @@ const selectedDuration = ref('5s')
 const generating = ref(false)
 const videoResult = ref<{id: number; thumbnail: string; prompt: string; cost: number; duration: string} | null>(null)
 
-const canAfford = computed(() => wallet.balance >= cost)
+const canAfford = computed(() => store.wallet.balance >= cost)
 
 const durations = [
   { id: '5s', label: '5 秒', points: 10 },

@@ -176,7 +176,7 @@ const children = [
 const transferForm = ref({ toUser: '', amount: 0, note: '' })
 
 const canTransfer = computed(() => {
-  return transferForm.value.toUser.trim() && transferForm.value.amount > 0 && transferForm.value.amount <= wallet.balance
+  return transferForm.value.toUser.trim() && transferForm.value.amount > 0 && transferForm.value.amount <= store.wallet.balance
 })
 
 async function doTransfer() {

@@ -376,4 +376,71 @@ export const cosmicIcons = {
       </linearGradient>
     </defs>
   </svg>`,
+
+  analyze: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="10" stroke="url(#g_anl)" stroke-width="1.2" opacity="0.4"/>
+    <circle cx="12" cy="12" r="7" stroke="url(#g_anl)" stroke-width="0.8" stroke-dasharray="2 3" opacity="0.5"/>
+    <path d="M8 12 Q12 8 16 12 Q12 16 8 12Z" stroke="url(#g_anl)" stroke-width="1.2" fill="none"/>
+    <circle cx="12" cy="12" r="2" fill="url(#g_anl)" opacity="0.8"/>
+    <circle cx="12" cy="12" r="0.8" fill="white" opacity="0.9"/>
+    <circle cx="12" cy="5" r="0.8" fill="#f97316" opacity="0.7"/>
+    <circle cx="5" cy="12" r="0.8" fill="#f97316" opacity="0.6"/>
+    <circle cx="19" cy="12" r="0.8" fill="#f97316" opacity="0.6"/>
+    <circle cx="12" cy="19" r="0.8" fill="#f97316" opacity="0.5"/>
+    <defs>
+      <linearGradient id="g_anl" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#f97316"/>
+        <stop offset="0.5" stop-color="#fbbf24"/>
+        <stop offset="1" stop-color="#f59e0b"/>
+      </linearGradient>
+    </defs>
+  </svg>`,
+
+  upload: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="9" stroke="url(#g_upl)" stroke-width="1.2" opacity="0.4"/>
+    <path d="M12 17 L12 7 M8 11 L12 7 L16 11" stroke="url(#g_upl)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M7 16 L17 16 L17 17 L7 17 Z" stroke="url(#g_upl)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <defs>
+      <linearGradient id="g_upl" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#8b5cf6"/>
+        <stop offset="1" stop-color="#06b6d4"/>
+      </linearGradient>
+    </defs>
+  </svg>`,
+
+  link: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="9" stroke="url(#g_lnk)" stroke-width="1.2" opacity="0.4"/>
+    <path d="M10 12 Q10 8 13 8 Q16 8 16 11 L17 12 Q18 14 16 16 Q14 18 12 16" stroke="url(#g_lnk)" stroke-width="1.3" stroke-linecap="round"/>
+    <path d="M14 12 Q14 16 11 16 Q8 16 8 13 L7 12 Q6 10 8 8 Q10 6 12 8" stroke="url(#g_lnk)" stroke-width="1.3" stroke-linecap="round"/>
+    <defs>
+      <linearGradient id="g_lnk" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#06b6d4"/>
+        <stop offset="1" stop-color="#a78bfa"/>
+      </linearGradient>
+    </defs>
+  </svg>`,
+
+  search: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="9" stroke="url(#g_sch)" stroke-width="1.2" opacity="0.4"/>
+    <circle cx="10.5" cy="10.5" r="5.5" stroke="url(#g_sch)" stroke-width="1.3" fill="none"/>
+    <path d="M15 15 L19 19" stroke="url(#g_sch)" stroke-width="2" stroke-linecap="round"/>
+    <defs>
+      <linearGradient id="g_sch" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#7c3aed"/>
+        <stop offset="1" stop-color="#06b6d4"/>
+      </linearGradient>
+    </defs>
+  </svg>`,
+
+  warning: `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="9" stroke="url(#g_warn)" stroke-width="1.2" opacity="0.4"/>
+    <path d="M12 8 L12 13" stroke="url(#g_warn)" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="12" cy="16" r="1.2" fill="url(#g_warn)"/>
+    <defs>
+      <linearGradient id="g_warn" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse">
+        <stop stop-color="#f59e0b"/>
+        <stop offset="1" stop-color="#fbbf24"/>
+      </linearGradient>
+    </defs>
+  </svg>`,
 }

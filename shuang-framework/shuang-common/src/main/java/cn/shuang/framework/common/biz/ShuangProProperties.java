@@ -41,7 +41,7 @@ public class ShuangProProperties {
         /** 30秒视频生成消耗积分 */
         private Integer video30sCost = 60;
         /** 视频拆解消耗积分 */
-        private Integer videoAnalyzeCost = 10;
+        private Integer videoAnalyzeCost = 5;
     }
 
     // ========== 充值套餐配置 ==========

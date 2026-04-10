@@ -30,12 +30,15 @@ export interface VideoRecord {
   prompt: string
   thumbnailUrl?: string
   videoUrl?: string
+  outputUrl?: string
   duration?: string
-  status: number        // 0=待处理，1=生成中，2=成功，3=失败
+  status: number        // 与后端 AiImageStatusEnum：10 进行中，20 成功，30 失败
   statusName?: string
   errorMessage?: string
-  cost: number          // 消耗积分
-  createTime: string
+  cost?: number
+  createTime?: string
+  bizOptions?: Record<string, unknown>
+  inputVideoUrl?: string
 }
 
 export interface VideoGenerateRespVO {
@@ -77,4 +80,43 @@ export function getVideoDetail(id: number) {
 /** 同步视频状态（轮询） */
 export function syncVideoStatus(id: number) {
   return post<Boolean>('/ai/video/sync-status', null, { params: { id } })
+}
+
+// ========== 视频拆解 API ==========
+
+/** 视频拆解请求 */
+export interface VideoAnalyzeReqVO {
+  videoUrl: string
+  modelId?: number
+}
+
+/** 视频拆解结果 */
+export interface VideoAnalyzeResult {
+  id: number
+  inputVideoUrl?: string
+  prompt?: string
+  outputUrl?: string
+  status: number
+  statusName?: string
+  options?: Record<string, unknown>
+  bizOptions?: Record<string, unknown>
+  errorMessage?: string
+  cost?: number
+  createTime?: string
+  finishTime?: string
+}
+
+/** 视频拆解 - 提取脚本 */
+export function extractScript(data: VideoAnalyzeReqVO) {
+  return post<number>('/ai/video/extract-script', data)
+}
+
+/** 视频拆解 - 分析元素 */
+export function analyzeElements(data: VideoAnalyzeReqVO) {
+  return post<number>('/ai/video/analyze-elements', data)
+}
+
+/** 视频拆解 - 生成提示词 */
+export function generatePrompt(data: VideoAnalyzeReqVO) {
+  return post<number>('/ai/video/generate-prompt', data)
 }

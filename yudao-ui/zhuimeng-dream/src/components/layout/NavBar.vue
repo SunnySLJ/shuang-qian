@@ -94,10 +94,12 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
+import { storeToRefs } from 'pinia'
 
 const router = useRouter()
 const store = useAppStore()
 const wallet = computed(() => store.wallet)
+const user = computed(() => store.user)
 const isLoggedIn = computed(() => !!store.token)
 
 const isScrolled = ref(false)
@@ -108,6 +110,7 @@ const navItems = [
   { label: 'AI 创作', path: '/ai/image', badge: '' },
   { label: '图片生成', path: '/ai/image' },
   { label: '视频生成', path: '/ai/video' },
+  { label: '爆款拆解', path: '/ai/video/analyze' },
   { label: '我的作品', path: '/ai/history' },
   { label: '代理中心', path: '/agency' },
 ]

@@ -257,7 +257,7 @@ yudao:
       video-5s-cost: 20     # 5秒视频生成消耗积分
       video-15s-cost: 40    # 15秒视频生成消耗积分
       video-30s-cost: 60    # 30秒视频生成消耗积分
-      video-analyze-cost: 10 # 视频拆解消耗积分
+      video-analyze-cost: 5 # 视频拆解消耗积分（爆款拆解）
     # 充值套餐（元 -> 积分比例）
     # 说明：1元 = 3积分，100元 = 300积分
     recharge:

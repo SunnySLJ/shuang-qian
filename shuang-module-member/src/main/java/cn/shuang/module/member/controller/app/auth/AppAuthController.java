@@ -49,6 +49,13 @@ public class AppAuthController {
         return success(authService.login(reqVO));
     }
 
+    @PostMapping("/register")
+    @Operation(summary = "手机号 + 密码注册")
+    @PermitAll
+    public CommonResult<AppAuthLoginRespVO> register(@RequestBody @Valid AppAuthRegisterReqVO reqVO) {
+        return success(authService.register(reqVO));
+    }
+
     @PostMapping("/logout")
     @Operation(summary = "登出系统")
     @PermitAll

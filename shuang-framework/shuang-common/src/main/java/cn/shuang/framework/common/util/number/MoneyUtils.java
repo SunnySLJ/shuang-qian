@@ -75,6 +75,26 @@ public class MoneyUtils {
     }
 
     /**
+     * 元转分（自动四舍五入保留两位小数）
+     *
+     * @param yuan 元
+     * @return 分
+     */
+    public static int yuanToFen(double yuan) {
+        return (int) Math.round(yuan * 100);
+    }
+
+    /**
+     * 元转分（自动四舍五入保留两位小数）
+     *
+     * @param yuan 元
+     * @return 分
+     */
+    public static int yuanToFen(BigDecimal yuan) {
+        return yuanToFen(yuan.doubleValue());
+    }
+
+    /**
      * 分转元
      *
      * @param fen 分

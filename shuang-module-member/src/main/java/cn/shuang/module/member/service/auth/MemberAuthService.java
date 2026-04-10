@@ -69,6 +69,8 @@ public interface MemberAuthService {
      */
     void sendSmsCode(Long userId, AppAuthSmsSendReqVO reqVO);
 
+    void sendSmsCodeForMock(AppAuthSmsSendReqVO reqVO);
+
     /**
      * 校验短信验证码是否正确
      *
@@ -84,5 +86,13 @@ public interface MemberAuthService {
      * @return 登录结果
      */
     AppAuthLoginRespVO refreshToken(String refreshToken);
+
+    /**
+     * 手机号 + 密码注册
+     *
+     * @param reqVO 注册信息
+     * @return 登录结果
+     */
+    AppAuthLoginRespVO register(@Valid AppAuthRegisterReqVO reqVO);
 
 }

@@ -314,4 +314,27 @@ public class MemberUserServiceImpl implements MemberUserService {
         return true;
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public MemberUserDO createUserWithPassword(String mobile, String password, String registerIp, Integer terminal) {
+        // 插入用户
+        MemberUserDO user = new MemberUserDO();
+        user.setMobile(mobile);
+        user.setStatus(CommonStatusEnum.ENABLE.getStatus());
+        user.setPassword(encodePassword(password));
+        user.setRegisterIp(registerIp).setRegisterTerminal(terminal);
+        // 默认昵称为手机号
+        user.setNickname("用户" + mobile.substring(mobile.length() - 6));
+        memberUserMapper.insert(user);
+
+        // 发送 MQ 消息：用户创建
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                memberUserProducer.sendUserCreateMessage(user.getId());
+            }
+        });
+        return user;
+    }
+
 }

@@ -1,11 +1,12 @@
 package cn.shuang.module.member.service.auth;
 
 import cn.hutool.core.lang.Assert;
+import cn.hutool.core.util.StrUtil;
 import cn.shuang.framework.common.enums.CommonStatusEnum;
 import cn.shuang.framework.common.enums.TerminalEnum;
 import cn.shuang.framework.common.enums.UserTypeEnum;
-import cn.shuang.framework.common.util.monitor.TracerUtils;
 import cn.shuang.framework.common.util.servlet.ServletUtils;
+import cn.shuang.framework.common.biz.ShuangProProperties;
 import cn.shuang.module.member.controller.app.auth.vo.*;
 import cn.shuang.module.member.convert.auth.AuthConvert;
 import cn.shuang.module.member.dal.dataobject.user.MemberUserDO;
@@ -60,6 +61,9 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     @Resource
     private OAuth2TokenCommonApi oauth2TokenApi;
 
+    @Resource
+    private ShuangProProperties shuangProProperties;
+
     @Override
     public AppAuthLoginRespVO login(AppAuthLoginReqVO reqVO) {
         // 使用手机 + 密码，进行登录。
@@ -79,11 +83,19 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     @Override
     @Transactional
     public AppAuthLoginRespVO smsLogin(AppAuthSmsLoginReqVO reqVO) {
-        // 校验验证码
         String userIp = getClientIP();
-        smsCodeApi.useSmsCode(AuthConvert.INSTANCE.convert(reqVO, SmsSceneEnum.MEMBER_LOGIN.getScene(), userIp));
 
-        // 获得获得注册用户
+        // 0. 兼容假验证码：如果配置了 mock-code 且输入匹配，直接放行
+        if (shuangProProperties.getSms() != null
+                && Boolean.TRUE.equals(shuangProProperties.getSms().getMockEnable())
+                && Objects.equals(reqVO.getCode(), shuangProProperties.getSms().getMockCode())) {
+            log.info("[smsLogin][mock] 手机号 {} 模拟登录成功", reqVO.getMobile());
+        } else {
+            // 1. 校验真实验证码
+            smsCodeApi.useSmsCode(AuthConvert.INSTANCE.convert(reqVO, SmsSceneEnum.MEMBER_LOGIN.getScene(), userIp));
+        }
+
+        // 2. 获得注册用户
         MemberUserDO user = userService.createUserIfAbsent(reqVO.getMobile(), userIp, getTerminal());
         Assert.notNull(user, "获取用户失败，结果为空");
 
@@ -193,7 +205,7 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         // 插入登录日志
         LoginLogCreateReqDTO reqDTO = new LoginLogCreateReqDTO();
         reqDTO.setLogType(logType.getType());
-        reqDTO.setTraceId(TracerUtils.getTraceId());
+        reqDTO.setTraceId(null);
         reqDTO.setUserId(userId);
         reqDTO.setUserType(getUserType().getValue());
         reqDTO.setUsername(mobile);
@@ -246,6 +258,17 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     }
 
     @Override
+    public void sendSmsCodeForMock(AppAuthSmsSendReqVO reqVO) {
+        if (shuangProProperties.getSms() != null
+                && Boolean.TRUE.equals(shuangProProperties.getSms().getMockEnable())
+                && Objects.equals(reqVO.getMobile(), shuangProProperties.getSms().getMockCode())) {
+            log.info("[sendSmsCodeForMock] 发送假验证码成功，手机号: {}, 验证码: {}", reqVO.getMobile(), shuangProProperties.getSms().getMockCode());
+            return;
+        }
+        smsCodeApi.sendSmsCode(AuthConvert.INSTANCE.convert(reqVO).setCreateIp(getClientIP()));
+    }
+
+    @Override
     public void validateSmsCode(Long userId, AppAuthSmsValidateReqVO reqVO) {
         smsCodeApi.validateSmsCode(AuthConvert.INSTANCE.convert(reqVO));
     }
@@ -257,10 +280,42 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         return AuthConvert.INSTANCE.convert(accessTokenDO, null);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AppAuthLoginRespVO register(AppAuthRegisterReqVO reqVO) {
+        // 1. 校验密码一致性
+        if (!Objects.equals(reqVO.getPassword(), reqVO.getConfirmPassword())) {
+            throw exception(AUTH_REGISTER_PASSWORD_MISMATCH);
+        }
+
+        // 2. 校验手机号是否已注册
+        MemberUserDO existUser = userService.getUserByMobile(reqVO.getMobile());
+        if (existUser != null) {
+            throw exception(AUTH_MOBILE_USED);
+        }
+
+        // 3. 创建用户
+        String userIp = getClientIP();
+        MemberUserDO user = userService.createUserWithPassword(reqVO.getMobile(), reqVO.getPassword(),
+                userIp, getTerminal());
+
+        // 4. 处理邀请码（如果有）
+        if (StrUtil.isNotBlank(reqVO.getInviteCode())) {
+            // TODO: 处理邀请码绑定逻辑
+            log.info("[register] 用户 {} 使用邀请码 {} 注册", user.getId(), reqVO.getInviteCode());
+        }
+
+        // 5. 记录注册日志
+        createLoginLog(user.getId(), reqVO.getMobile(), LoginLogTypeEnum.LOGIN_MOBILE, LoginResultEnum.SUCCESS);
+
+        // 6. 创建 Token 并返回
+        return createTokenAfterLoginSuccess(user, reqVO.getMobile(), LoginLogTypeEnum.LOGIN_MOBILE, null);
+    }
+
     private void createLogoutLog(Long userId) {
         LoginLogCreateReqDTO reqDTO = new LoginLogCreateReqDTO();
         reqDTO.setLogType(LoginLogTypeEnum.LOGOUT_SELF.getType());
-        reqDTO.setTraceId(TracerUtils.getTraceId());
+        reqDTO.setTraceId(null);
         reqDTO.setUserId(userId);
         reqDTO.setUserType(getUserType().getValue());
         reqDTO.setUsername(getMobile(userId));

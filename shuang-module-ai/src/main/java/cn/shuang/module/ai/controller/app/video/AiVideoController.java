@@ -11,14 +11,15 @@ import cn.shuang.module.ai.service.video.AiVideoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.annotation.Resource;
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 import java.util.List;
 
+import static cn.shuang.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
 import static cn.shuang.framework.common.pojo.CommonResult.success;
 
 /**
@@ -30,6 +31,7 @@ import static cn.shuang.framework.common.pojo.CommonResult.success;
 @RequestMapping("/ai/video")
 @Validated
 @Tag(name = "AI 视频生成")
+@Slf4j
 public class AiVideoController {
 
     @Resource
@@ -38,58 +40,65 @@ public class AiVideoController {
     @PostMapping("/text-to-video")
     @Operation(summary = "文生视频")
     public CommonResult<Long> textToVideo(@RequestBody @Valid AiVideoGenerateReqVO reqVO) {
-        Long id = videoService.textToVideo(reqVO.getUserId(), reqVO.getPrompt(), reqVO.getModelId(), reqVO.getDuration());
+        Long userId = getLoginUserId();
+        Long id = videoService.textToVideo(userId, reqVO.getPrompt(), reqVO.getModelId(), reqVO.getDuration());
         return success(id);
     }
 
     @PostMapping("/image-to-video")
     @Operation(summary = "图生视频")
     public CommonResult<Long> imageToVideo(@RequestBody @Valid AiVideoGenerateReqVO reqVO) {
-        Long id = videoService.imageToVideo(reqVO.getUserId(), reqVO.getImageUrl(), reqVO.getPrompt(), reqVO.getModelId(), reqVO.getDuration());
+        Long userId = getLoginUserId();
+        Long id = videoService.imageToVideo(userId, reqVO.getImageUrl(), reqVO.getPrompt(), reqVO.getModelId(), reqVO.getDuration());
         return success(id);
     }
 
     @PostMapping("/golden-6s")
     @Operation(summary = "黄金 6 秒拼接")
     public CommonResult<Long> golden6s(@RequestBody @Valid AiVideoGenerateReqVO reqVO) {
-        Long id = videoService.golden6s(reqVO.getUserId(), reqVO.getPrompt(), reqVO.getModelId());
+        Long userId = getLoginUserId();
+        Long id = videoService.golden6s(userId, reqVO.getPrompt(), reqVO.getModelId());
         return success(id);
     }
 
     @PostMapping("/ai-mix")
     @Operation(summary = "AI 超级混剪")
-    public CommonResult<Long> aiMix(@RequestBody @Valid AiVideoGenerateReqVO reqVO) {
-        Long id = videoService.aiMix(reqVO.getUserId(), reqVO.getPrompt(), reqVO.getModelId());
+    public CommonResult<Long> aiMix(@RequestBody @Valid AiVideoGenerateReqVO request) {
+        Long userId = getLoginUserId();
+        Long id = videoService.aiMix(userId, request.getPrompt(), request.getModelId());
         return success(id);
     }
 
     @PostMapping("/extract-script")
     @Operation(summary = "视频拆解 - 提取脚本")
-    public CommonResult<Long> extractScript(@RequestBody @Valid AiVideoAnalyzeReqVO reqVO) {
-        Long id = videoService.extractScript(reqVO.getUserId(), reqVO.getVideoUrl(), reqVO.getModelId());
+    public CommonResult<Long> extractScript(@RequestBody @Valid AiVideoAnalyzeReqVO request) {
+        Long userId = getLoginUserId();
+        Long id = videoService.extractScript(userId, request.getVideoUrl(), request.getModelId());
         return success(id);
     }
 
     @PostMapping("/analyze-elements")
     @Operation(summary = "视频拆解 - 分析元素")
-    public CommonResult<Long> analyzeElements(@RequestBody @Valid AiVideoAnalyzeReqVO reqVO) {
-        Long id = videoService.analyzeElements(reqVO.getUserId(), reqVO.getVideoUrl(), reqVO.getModelId());
+    public CommonResult<Long> analyzeElements(@RequestBody @Valid AiVideoAnalyzeReqVO request) {
+        Long userId = getLoginUserId();
+        Long id = videoService.analyzeElements(userId, request.getVideoUrl(), request.getModelId());
         return success(id);
     }
 
     @PostMapping("/generate-prompt")
     @Operation(summary = "视频拆解 - 生成提示词")
-    public CommonResult<Long> generatePrompt(@RequestBody @Valid AiVideoAnalyzeReqVO reqVO) {
-        Long id = videoService.generatePrompt(reqVO.getUserId(), reqVO.getVideoUrl(), reqVO.getModelId());
+    public CommonResult<Long> generatePrompt(@RequestBody @Valid AiVideoAnalyzeReqVO request) {
+        Long userId = getLoginUserId();
+        Long id = videoService.generatePrompt(userId, request.getVideoUrl(), request.getModelId());
         return success(id);
     }
 
     @GetMapping("/page")
     @Operation(summary = "获取视频生成记录列表")
-    public CommonResult<PageResult<AiImageRespVO>> getVideoPage(
-            @Parameter(description = "用户 ID") @RequestParam Long userId,
-            @Validated PageParam pageParam) {
-        PageResult<AiImageDO> pageResult = videoService.getVideoPage(userId, new cn.shuang.module.ai.controller.admin.image.vo.AiImagePageReqVO());
+    public CommonResult<PageResult<AiImageRespVO>> getVideoPage(@Validated PageParam pageParam) {
+        Long userId = getLoginUserId();
+        PageResult<AiImageDO> pageResult = videoService.getVideoPage(userId,
+                new cn.shuang.module.ai.controller.admin.image.vo.AiImagePageReqVO());
         List<AiImageRespVO> list = pageResult.getList().stream().map(image -> {
             AiImageRespVO vo = new AiImageRespVO();
             vo.setId(image.getId());
@@ -129,5 +138,4 @@ public class AiVideoController {
         boolean result = videoService.syncVideoStatus(id);
         return success(result);
     }
-
 }

@@ -183,7 +183,10 @@ public class PayOrderServiceImpl implements PayOrderService {
             // 此处需要读取最新的状态
             order = orderMapper.selectById(order.getId());
         }
-        return PayOrderConvert.INSTANCE.convert(order, unifiedOrderResp);
+        PayOrderSubmitRespVO respVO = PayOrderConvert.INSTANCE.convert(order, unifiedOrderResp);
+        respVO.setOrderNo(orderExtension.getNo());
+        respVO.setChannelExtras(reqVO.getChannelExtras());
+        return respVO;
     }
 
     private PayOrderDO validateOrderCanSubmit(Long id) {

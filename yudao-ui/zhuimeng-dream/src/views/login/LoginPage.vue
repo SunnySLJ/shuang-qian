@@ -71,18 +71,12 @@
               </div>
 
               <div class="form-field">
-                <div class="field-label-row">
-                  <label class="field-label">验证码</label>
-                  <button type="button" class="btn-ghost" @click="sendCode" :disabled="countdown > 0">
-                    {{ countdown > 0 ? `${countdown}s` : '发送验证码' }}
-                  </button>
-                </div>
+                <label class="field-label">密码</label>
                 <input
-                  v-model="loginForm.code"
-                  type="text"
+                  v-model="loginForm.password"
+                  type="password"
                   class="input-dream"
-                  placeholder="请输入验证码"
-                  maxlength="6"
+                  placeholder="请输入密码"
                 />
               </div>
             </div>
@@ -127,13 +121,22 @@
               </div>
 
               <div class="form-field">
-                <label class="field-label">验证码</label>
+                <label class="field-label">密码</label>
                 <input
-                  v-model="registerForm.code"
-                  type="text"
+                  v-model="registerForm.password"
+                  type="password"
                   class="input-dream"
-                  placeholder="请输入验证码"
-                  maxlength="6"
+                  placeholder="请输入密码（6-20位）"
+                />
+              </div>
+
+              <div class="form-field">
+                <label class="field-label">确认密码</label>
+                <input
+                  v-model="registerForm.confirmPassword"
+                  type="password"
+                  class="input-dream"
+                  placeholder="请再次输入密码"
                 />
               </div>
 
@@ -169,6 +172,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores/app'
+import { login, register } from '@/api/auth'
 import ParticleBackground from '@/components/common/ParticleBackground.vue'
 
 const router = useRouter()
@@ -177,15 +181,14 @@ const store = useAppStore()
 const activeTab = ref<'login' | 'register'>('login')
 const loading = ref(false)
 const errorMsg = ref('')
-const countdown = ref(0)
 
 const tabs = [
   { key: 'login' as const, label: '登录' },
   { key: 'register' as const, label: '注册' },
 ]
 
-const loginForm = reactive({ phone: '13800138000', code: '123456' })
-const registerForm = reactive({ phone: '13800138000', code: '123456', inviteCode: '' })
+const loginForm = reactive({ phone: '', password: '' })
+const registerForm = reactive({ phone: '', password: '', confirmPassword: '', inviteCode: '' })
 
 const brandFeatures = [
   { icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>`, text: 'AI 图片生成' },
@@ -193,53 +196,74 @@ const brandFeatures = [
   { icon: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`, text: '代理分销收益' },
 ]
 
-async function sendCode() {
-  const phone = activeTab.value === 'login' ? loginForm.phone : registerForm.phone
-  if (!phone || phone.length < 11) {
-    errorMsg.value = '请输入正确的手机号'
+async function handleLogin() {
+  if (!loginForm.phone || !loginForm.password) {
+    errorMsg.value = '请填写完整信息'
     return
   }
-  // TODO: 调用发送验证码API
-  countdown.value = 60
-  const timer = setInterval(() => {
-    countdown.value--
-    if (countdown.value <= 0) clearInterval(timer)
-  }, 1000)
-}
-
-async function handleLogin() {
-  if (!loginForm.phone || !loginForm.code) {
-    errorMsg.value = '请填写完整信息'
+  if (!/^1[3-9]\d{9}$/.test(loginForm.phone)) {
+    errorMsg.value = '请输入正确的手机号'
     return
   }
   loading.value = true
   errorMsg.value = ''
   try {
-    // TODO: 调用登录API
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    store.login('mock-token', { id: 1, nickname: '追梦用户', avatar: '', phone: loginForm.phone, level: 0, brokerageUserId: null })
+    const res = await login({ mobile: loginForm.phone, password: loginForm.password })
+    store.login(res.accessToken, {
+      id: res.userId,
+      nickname: '追梦用户',
+      avatar: '',
+      phone: loginForm.phone,
+      level: 0,
+      brokerageUserId: null
+    })
+    localStorage.setItem('refreshToken', res.refreshToken)
     router.push('/dashboard')
-  } catch {
-    errorMsg.value = '登录失败，请重试'
+  } catch (e: any) {
+    errorMsg.value = e.message || '登录失败，请重试'
   } finally {
     loading.value = false
   }
 }
 
 async function handleRegister() {
-  if (!registerForm.phone || !registerForm.code) {
+  if (!registerForm.phone || !registerForm.password || !registerForm.confirmPassword) {
     errorMsg.value = '请填写完整信息'
+    return
+  }
+  if (!/^1[3-9]\d{9}$/.test(registerForm.phone)) {
+    errorMsg.value = '请输入正确的手机号'
+    return
+  }
+  if (registerForm.password.length < 6 || registerForm.password.length > 20) {
+    errorMsg.value = '密码长度为 6-20 位'
+    return
+  }
+  if (registerForm.password !== registerForm.confirmPassword) {
+    errorMsg.value = '两次输入的密码不一致'
     return
   }
   loading.value = true
   errorMsg.value = ''
   try {
-    // TODO: 调用注册API
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    store.login('mock-token', { id: 1, nickname: '新用户', avatar: '', phone: registerForm.phone, level: 0, brokerageUserId: null })
+    const res = await register({
+      mobile: registerForm.phone,
+      password: registerForm.password,
+      confirmPassword: registerForm.confirmPassword,
+      inviteCode: registerForm.inviteCode || undefined
+    })
+    store.login(res.accessToken, {
+      id: res.userId,
+      nickname: '新用户',
+      avatar: '',
+      phone: registerForm.phone,
+      level: 0,
+      brokerageUserId: null
+    })
+    localStorage.setItem('refreshToken', res.refreshToken)
     router.push('/dashboard')
-  } catch {
-    errorMsg.value = '注册失败，请重试'
+  } catch (e: any) {
+    errorMsg.value = e.message || '注册失败，请重试'
   } finally {
     loading.value = false
   }

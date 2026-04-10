@@ -66,6 +66,8 @@ public interface PayOrderConvert {
     PayOrderUnifiedReqDTO convert2(PayOrderSubmitReqVO reqVO, String userIp);
 
     @Mapping(source = "order.status", target = "status")
-    PayOrderSubmitRespVO convert(PayOrderDO order, cn.shuang.module.pay.framework.pay.core.client.dto.order.PayOrderRespDTO respDTO);
+    @Mapping(source = "order.id", target = "orderId")
+    PayOrderSubmitRespVO convert(cn.shuang.module.pay.dal.dataobject.order.PayOrderDO order,
+                                 cn.shuang.module.pay.framework.pay.core.client.dto.order.PayOrderRespDTO respDTO);
 
 }

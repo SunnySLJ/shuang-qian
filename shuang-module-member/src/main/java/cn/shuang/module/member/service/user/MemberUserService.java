@@ -115,6 +115,17 @@ public interface MemberUserService {
     void updateUserPassword(Long userId, AppMemberUserUpdatePasswordReqVO reqVO);
 
     /**
+     * 使用指定密码创建用户
+     *
+     * @param mobile     手机号
+     * @param password   密码（明文）
+     * @param registerIp 注册 IP
+     * @param terminal   终端
+     * @return 用户对象
+     */
+    MemberUserDO createUserWithPassword(String mobile, String password, String registerIp, Integer terminal);
+
+    /**
      * 【会员】忘记密码
      *
      * @param reqVO 请求信息

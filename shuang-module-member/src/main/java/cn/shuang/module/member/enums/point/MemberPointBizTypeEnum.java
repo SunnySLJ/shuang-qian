@@ -25,7 +25,18 @@ public enum MemberPointBizTypeEnum implements ArrayValuable<Integer> {
 
     ORDER_GIVE(21, "订单积分奖励", "下单获得 {} 积分", true), // 支付订单时，赠送积分
     ORDER_GIVE_CANCEL(22, "订单积分奖励（整单取消）", "订单取消，退还 {} 积分", false), // ORDER_GIVE 的取消
-    ORDER_GIVE_CANCEL_ITEM(23, "订单积分奖励（单个退款）", "订单退款，扣除赠送的 {} 积分", false) // ORDER_GIVE 的取消
+    ORDER_GIVE_CANCEL_ITEM(23, "订单积分奖励（单个退款）", "订单退款，扣除赠送的 {} 积分", false), // ORDER_GIVE 的取消
+
+    // ========== AI 相关积分 ==========
+    AI_IMAGE(31, "AI 图片生成", "AI 图片生成消耗 {} 积分", false),
+    AI_VIDEO(32, "AI 视频生成", "AI 视频生成消耗 {} 积分", false),
+    VIDEO_ANALYZE(33, "视频拆解", "视频拆解消耗 {} 积分", false),
+
+    // ========== 代理相关积分 ==========
+    RECHARGE(41, "积分充值", "积分充值获得 {} 积分", true),
+    AGENCY_COMMISSION(42, "代理分佣", "代理分佣获得 {} 积分", true),
+    AGENCY_TRANSFER_IN(43, "积分转入", "获得 {} 积分转入", true),
+    AGENCY_TRANSFER_OUT(44, "积分转出", "转出 {} 积分", false)
     ;
 
     /**

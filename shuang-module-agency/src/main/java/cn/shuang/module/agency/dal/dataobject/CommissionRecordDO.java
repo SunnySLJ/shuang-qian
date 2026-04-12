@@ -62,6 +62,12 @@ public class CommissionRecordDO extends BaseDO {
     private Integer commissionRate;
 
     /**
+     * 代理层级：1-一级代理（直接上级），2-二级代理（间接上级）
+     * 用于区分同一笔订单对不同层级的分佣记录
+     */
+    private Integer level;
+
+    /**
      * 状态：0-待结算，1-已结算，2-已取消
      */
     private Integer status;

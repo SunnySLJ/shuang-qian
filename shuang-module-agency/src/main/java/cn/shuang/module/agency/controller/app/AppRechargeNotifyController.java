@@ -3,6 +3,7 @@ package cn.shuang.module.agency.controller.app;
 import cn.hutool.core.util.StrUtil;
 import cn.shuang.framework.common.pojo.CommonResult;
 import cn.shuang.module.agency.service.AgencyUserService;
+import cn.shuang.module.agency.service.CommissionService;
 import cn.shuang.module.pay.api.notify.dto.PayOrderNotifyReqDTO;
 import cn.shuang.module.pay.dal.dataobject.order.PayOrderExtensionDO;
 import cn.shuang.module.pay.enums.order.PayOrderStatusEnum;
@@ -28,7 +29,7 @@ import static cn.shuang.framework.common.pojo.CommonResult.success;
  */
 @Tag(name = "用户 APP - 积分充值回调")
 @RestController
-@RequestMapping("/app/notify/recharge")
+@RequestMapping("/notify/recharge")
 @RequiredArgsConstructor
 @Validated
 @Slf4j
@@ -38,6 +39,7 @@ public class AppRechargeNotifyController {
 
     private final PayOrderService payOrderService;
     private final AgencyUserService agencyUserService;
+    private final CommissionService commissionService;
     private final WalletService walletService;
 
     @PostMapping("/order")
@@ -71,47 +73,22 @@ public class AppRechargeNotifyController {
         Integer points = Integer.valueOf(extras.get("points"));
         Double amount = Double.valueOf(extras.get("amount"));
 
-        // 4.1 发放积分到用户钱包
+        // 4.1 发放积分到用户钱包（bizType=2 表示充值收入）
         walletService.addPoints(userId, points, 2,
                 reqDTO.getMerchantOrderId(),
                 StrUtil.format("积分充值 {} 元，获得 {} 积分", amount, points));
 
-        // 4.2 给上级代理分佣
-        Long parentAgencyUserId = getParentAgencyUserId(userId);
-        if (parentAgencyUserId != null) {
-            distributeCommission(parentAgencyUserId, userId, points, reqDTO.getMerchantOrderId());
+        // 4.2 给上级代理分佣（一级+二级，使用统一的 CommissionService）
+        // bizOrderNo 复用支付订单号，幂等由 CommissionService 内部保证
+        try {
+            commissionService.calculateRechargeCommission(userId, points, reqDTO.getMerchantOrderId());
+        } catch (Exception e) {
+            // 分佣失败不影响积分发放，只记录日志
+            log.error("[notifyRechargeOrder] 分佣失败，不阻塞积分发放 - userId: {}, orderNo: {}",
+                    userId, reqDTO.getMerchantOrderId(), e);
         }
 
         log.info("[notifyRechargeOrder] 用户 {} 充值 {} 元发放 {} 积分成功", userId, amount, points);
         return success(null);
-    }
-
-    private Long getParentAgencyUserId(Long userId) {
-        var agencyUser = agencyUserService.getAgencyByUserId(userId);
-        return agencyUser != null ? agencyUser.getParentAgencyId() : null;
-    }
-
-    private void distributeCommission(Long parentAgencyUserId, Long userId, Integer points, String orderNo) {
-        var parentAgency = agencyUserService.getById(parentAgencyUserId);
-        if (parentAgency == null || !parentAgency.getAgencyEnabled()) {
-            return;
-        }
-
-        // 一级代理分佣比例 20%
-        if (parentAgency.getLevel() == 1) {
-            int commission = points * 20 / 100;
-            if (commission > 0) {
-                agencyUserService.addPoints(parentAgencyUserId, commission, 0L);
-                log.info("[distributeCommission] 一级代理 {} 分佣 {} 积分，订单 {}", parentAgencyUserId, commission, orderNo);
-            }
-        }
-        // 二级代理分佣比例 8%
-        if (parentAgency.getLevel() == 2) {
-            int commission = points * 8 / 100;
-            if (commission > 0) {
-                agencyUserService.addPoints(parentAgencyUserId, commission, 0L);
-                log.info("[distributeCommission] 二级代理 {} 分佣 {} 积分", parentAgencyUserId, commission);
-            }
-        }
     }
 }

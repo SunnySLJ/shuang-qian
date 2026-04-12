@@ -38,6 +38,10 @@ public class ExpressionIdempotentKeyResolver implements IdempotentKeyResolver {
                 evaluationContext.setVariable(parameterNames[i], args[i]);
             }
         }
+        // 兼容方案：把第一个参数设为 #root，这样即使参数名解析失败也能用 #root 访问
+        if (args.length > 0) {
+            evaluationContext.setRootObject(args[0]);
+        }
 
         // 解析参数
         Expression expression = expressionParser.parseExpression(idempotent.keyArg());

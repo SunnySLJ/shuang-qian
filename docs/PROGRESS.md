@@ -122,10 +122,33 @@
 
 | 任务 | 优先级 | 预计工时 | 状态 |
 |------|--------|---------|------|
-| 微信支付真实对接 | P0 | 8 小时 | ⏳ 待开发 |
-| 支付宝真实对接 | P0 | 8 小时 | ⏳ 待开发 |
-| ~~充值回调处理~~ | P0 | 4 小时 | ✅ 完成（MOCK） |
+| 微信支付真实对接 | P0 | 8 小时 | ✅ 完成 |
+| 支付宝真实对接 | P0 | 8 小时 | ✅ 完成 |
+| ~~充值回调处理~~ | P0 | 4 小时 | ✅ 完成 |
 | ~~自动分成结算~~ | P0 | 4 小时 | ✅ 完成 |
+
+**完成说明（P0-5）**:
+- 真实支付走芋道 `PayClient` 框架（已存在于 `pay/framework/`）
+- 新建 `pay-channel-init.sql`：初始化 `pay_app` 和 5 个支付渠道（wx_lite/wx_native/wx_pub/alipay_qr/alipay_app）
+- 前端充值页接入真实支付流程：createRecharge → submitPayOrder → displayMode 处理 → pollPayStatus
+
+### Phase 2.5 - 安全与幂等（第一批 P0 补充）
+
+| 任务 | 优先级 | 预计工时 | 状态 |
+|------|--------|---------|------|
+| 图片生成积分扣减 | P0 | 2 小时 | ✅ 完成 |
+| 视频生成积分扣减失败回滚 | P0 | 2 小时 | ✅ 完成 |
+| 并发扣减安全（乐观锁） | P0 | 2 小时 | ✅ 完成 |
+| 扣积分接口幂等保护 | P0 | 1 小时 | ✅ 完成 |
+| 邀请码绑定逻辑补全 | P0 | 2 小时 | ✅ 完成 |
+
+**完成说明（P0-1~P0-6 全部完成 2026-04-11）**:
+- P0-1: `AiImageServiceImpl.drawImage()` 扣积分 + 失败回滚
+- P0-2: `AiVideoServiceImpl` catch 块调用 `refundVideoGenerationCost`
+- P0-3: `WalletDO` 添加 `@Version` 字段，`deductBalanceWithVersion` 乐观锁
+- P0-4: `@Idempotent` 注解接入 AI 生成接口，`clientId` 参数幂等
+- P0-5: 微信/支付宝真实支付（见上方 Phase 3）
+- P0-6: `InviteCodeUtil` 编解码 + `createAgencyRelation` 注册时绑定上级
 
 ### Phase 4 - 前端开发
 
@@ -135,7 +158,7 @@
 | AI 生图页 | P0 | 8 小时 | ⏳ 待开发 |
 | AI 视频页 | P0 | 8 小时 | ⏳ 待开发 |
 | 代理中心 | P0 | 8 小时 | ⏳ 待开发 |
-| 积分充值页 | P0 | 8 小时 | ⏳ 待开发 |
+| 积分充值页 | P0 | 8 小时 | ✅ 完成（对接真实支付） |
 | 灵感案例库 | P1 | 8 小时 | ⏳ 待开发 |
 
 ---
@@ -340,7 +363,7 @@ Integer platformRevenue = rechargeAmount - level1Commission - level2Commission;
 
 ## 六、风险提示
 
-1. **支付资质** - 需要微信/支付宝商户号才能进行真实支付测试
+1. ~~**支付资质**~~ - 微信/支付宝真实支付已接入（P0-5 完成），生产环境需配置商户资质
 2. **AI API** - 舞墨 AI API Key 已配置，待验证真实 API 对接
 3. **并发安全** - 积分扣减需使用乐观锁或分布式锁保证一致性
 4. **数据安全** - 涉及金额操作必须记录完整流水，支持审计
@@ -350,3 +373,21 @@ Integer platformRevenue = rechargeAmount - level1Commission - level2Commission;
 ## 七、联系方式
 
 如有问题或需要调整，请告诉我具体的需求。
+
+---
+
+## 八、修复记录
+
+### 2026-04-11 · 登录注册页面 HTML 结构修复
+
+**问题**: 登录页面注册表单缺少 `</div>` 闭合标签，导致 Vue 编译错误
+
+**文件**: `shuang-ui/zhuimeng-dream/src/views/login/LoginPage.vue`
+
+**修复**: 调整登录页结构，确保页面布局和认证链路正确
+
+**验证**:
+- 后端登录注册 API 测试通过
+- 注册新用户：`curl -X POST http://localhost:48080/app-api/member/auth/register ...` ✓
+- 登录测试：`curl -X POST http://localhost:48080/app-api/member/auth/login ...` ✓
+- 前端 Vite 编译可通过

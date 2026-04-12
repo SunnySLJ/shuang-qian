@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 /**
  * AI 视频分析请求 VO
@@ -15,21 +14,28 @@ import jakarta.validation.constraints.NotNull;
 public class AiVideoAnalyzeReqVO {
 
     /**
-     * 用户 ID
-     */
-    @NotNull(message = "用户 ID 不能为空")
-    private Long userId;
-
-    /**
      * 视频 URL
      */
+    @Schema(description = "视频 URL", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank(message = "视频 URL 不能为空")
     private String videoUrl;
 
     /**
      * 模型 ID
      */
-    @NotNull(message = "模型 ID 不能为空")
+    @Schema(description = "模型 ID，兼容旧链路可选")
     private Long modelId;
+
+    /**
+     * 视频拆解供应商
+     */
+    @Schema(description = "视频拆解供应商，可选值：aliyun、doubao、wumo")
+    private String provider;
+
+    /**
+     * 客户端请求 ID（用于幂等）
+     */
+    @Schema(description = "客户端请求 ID，用于幂等控制")
+    private String clientId;
 
 }

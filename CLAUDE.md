@@ -30,7 +30,7 @@
 - `shuang-module-member`：会员相关能力
 - `shuang-module-ai`：AI 图片/视频生成相关能力
 - `shuang-module-agency`：代理分销模块
-- `yudao-ui`：前端工程
+- `shuang-ui/zhuimeng-dream`：当前使用的前端工程
 
 ## 当前业务重点
 
@@ -158,3 +158,100 @@ java -jar shuang-server/target/shuang-server.jar
 - `/checkpoint` - 项目进度检查
 
 如果 gstack 技能无法使用，运行 `cd .claude/skills/gstack && ./setup` 重新构建。
+
+使用示例见 [docs/GSTACK-EXAMPLES.md](docs/GSTACK-EXAMPLES.md)。
+
+---
+
+## 开发进度管理
+
+### 进度追踪规则
+
+- 所有待开发功能记录在 `DEVELOPMENT-PROGRESS.md`，按优先级 P0/P1/P2 排列
+- 开发过程中每次完成一个任务，同步更新该文件对应任务状态
+- 完成进度更新后，同步更新 `docs/PROGRESS.md` 的进度报告
+- 每次提交前确保 `DEVELOPMENT-PROGRESS.md` 对应任务已标记完成
+- 禁止输出总结性、测试性的 md/txt 文件（用户规则）
+
+### 任务优先级顺序（P0 为最高）
+
+| 优先级 | 说明 |
+|:------:|------|
+| P0 | 上线前必须完成，不完成无法上线 |
+| P1 | 上线后尽快修复，影响用户体验 |
+| P2 | 优化改进，可延后处理 |
+
+### 当前开发批次（第一批次）
+
+P0-1 → P0-2 → P0-3 → P0-4 → P0-5 → P0-6（按顺序开发）
+
+### 积分扣减规范（重要）
+
+积分扣减是整个商业模式的根基，所有涉及扣积分的操作必须遵守以下规范：
+
+#### 扣积分标准流程
+
+```
+1. 生成幂等 key（bizOrderNo = UUID）
+2. 检查积分余额（hasEnoughPoints）
+3. 扣减积分（deductPoints）—— 在事务中
+4. 创建业务记录（insert）
+5. 异步执行（如有）
+6. 失败时回滚积分（addPoints）—— 在异步 catch 中调用
+```
+
+#### 禁止事项
+
+- ❌ 扣积分后不记录流水
+- ❌ 异步执行失败不回滚积分
+- ❌ 扣积分接口无幂等保护
+- ❌ 余额检查和扣减分两步执行（高并发风险）
+
+#### 积分单位
+
+- **积分内部存储单位：分**（整数，1元 = 100分）
+- **用户展示单位：元/积分**（除以100后显示）
+- **bizType 含义**：
+  - 正数 = 收入（1充值/2分配/3分佣/4奖励/5退款）
+  - 负数 = 支出（-1生图/-2文生视频/-3图生视频/-4黄金6秒/-5混剪/-6/-7/-8拆解）
+
+#### 已有幂等工具
+
+项目已有完善的幂等组件，位于：
+`shuang-framework/shuang-spring-boot-starter-protection/core/idempotent/`
+
+使用方式：
+```java
+@Idempotent(key = "ai:video:text-to-video:#{#req.userId}:#{#bizOrderNo}",
+            timeout = 30, keyResolver = ExpressionIdempotentKeyResolver.class)
+```
+
+### 提交规范
+
+- `feat:` 新功能
+- `fix:` 修复问题
+- `refactor:` 重构
+- `docs:` 文档更新
+- `test:` 测试相关
+- `chore:` 构建、配置或工具调整
+- 提交前确保 `DEVELOPMENT-PROGRESS.md` 对应任务已标记完成
+
+## Plan 机制
+
+> 每次开发前必须先读 plan/README.md，开发结束后同步更新。
+
+### Plan 目录结构
+
+```
+plan/
+├── README.md           # 项目计划总览、当前阶段、进度追踪
+└── technical-difficulties.md  # 技术难点清单（含 P0/P1/P2 优先级）
+```
+
+### Plan 使用规则
+
+1. **开发前**：读取 `plan/README.md`，了解当前阶段和进度
+2. **开发中**：技术难点在 `technical-difficulties.md` 中打勾标记完成
+3. **开发后**：更新 `plan/README.md` 的更新日志，说明本次完成内容
+4. **每次会话开始**：快速浏览 plan 目录，了解上下文
+5. **遇到新问题**：同步记录到 `technical-difficulties.md`，评估优先级

@@ -58,6 +58,30 @@ public interface CommissionRecordMapper extends BaseMapper<CommissionRecordDO> {
     CommissionRecordDO selectByBizOrderNo(@Param("bizOrderNo") String bizOrderNo);
 
     /**
+     * 根据订单号和代理用户ID查询佣金记录（幂等检查用）
+     *
+     * @param bizOrderNo      业务订单号
+     * @param brokerageUserId 代理用户 ID
+     * @return 佣金记录
+     */
+    @Select("SELECT * FROM agency_commission_record WHERE biz_order_no = #{bizOrderNo} AND brokerage_user_id = #{brokerageUserId} AND deleted = 0 LIMIT 1")
+    CommissionRecordDO selectByBizOrderNoAndBrokerageUserId(@Param("bizOrderNo") String bizOrderNo,
+                                                          @Param("brokerageUserId") Long brokerageUserId);
+
+    /**
+     * 根据订单号、代理用户ID和层级查询佣金记录（二级分佣幂等检查用）
+     *
+     * @param bizOrderNo      业务订单号
+     * @param brokerageUserId 代理用户 ID
+     * @param level           代理层级（1=一级代理，2=二级代理）
+     * @return 佣金记录
+     */
+    @Select("SELECT * FROM agency_commission_record WHERE biz_order_no = #{bizOrderNo} AND brokerage_user_id = #{brokerageUserId} AND level = #{level} AND deleted = 0 LIMIT 1")
+    CommissionRecordDO selectByBizOrderNoAndLevel(@Param("bizOrderNo") String bizOrderNo,
+                                                 @Param("brokerageUserId") Long brokerageUserId,
+                                                 @Param("level") Integer level);
+
+    /**
      * 查询用户的上级代理佣金记录
      *
      * @param userId          用户 ID

@@ -2,12 +2,15 @@ package cn.shuang.module.ai.controller.app.image;
 
 import cn.shuang.framework.common.pojo.CommonResult;
 import cn.shuang.framework.common.pojo.PageResult;
+import cn.shuang.framework.idempotent.core.annotation.Idempotent;
+import cn.shuang.framework.idempotent.core.keyresolver.impl.ExpressionIdempotentKeyResolver;
 import cn.shuang.framework.security.core.util.SecurityFrameworkUtils;
 import cn.shuang.module.ai.controller.admin.image.vo.AiImagePageReqVO;
 import cn.shuang.module.ai.controller.app.image.vo.AiImageGenerateReqVO;
 import cn.shuang.module.ai.controller.app.image.vo.AiImageRespVO;
 import cn.shuang.module.ai.dal.dataobject.image.AiImageDO;
 import cn.shuang.module.ai.service.image.AiImageService;
+import cn.shuang.module.ai.service.prompt.AppPromptBuildUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,6 +20,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static cn.shuang.framework.common.pojo.CommonResult.success;
@@ -28,7 +32,7 @@ import static cn.shuang.framework.common.pojo.CommonResult.success;
  */
 @Tag(name = "用户 APP - AI 图片生成")
 @RestController
-@RequestMapping("/app/ai/image")
+@RequestMapping("/ai/image")
 @Validated
 public class AppAiImageController {
 
@@ -37,15 +41,23 @@ public class AppAiImageController {
 
     @PostMapping("/generate")
     @Operation(summary = "生成图片", description = "文生图或图生图，根据是否传入参考图片URL判断")
+    @Idempotent(keyArg = "ai:image:draw:#{#req.clientId}",
+                timeout = 30, keyResolver = ExpressionIdempotentKeyResolver.class)
     public CommonResult<Long> generateImage(@Valid @RequestBody AiImageGenerateReqVO reqVO) {
         Long userId = SecurityFrameworkUtils.getLoginUserId();
         // 使用现有的绘图方法
         cn.shuang.module.ai.controller.admin.image.vo.AiImageDrawReqVO drawReqVO =
                 new cn.shuang.module.ai.controller.admin.image.vo.AiImageDrawReqVO();
-        drawReqVO.setPrompt(reqVO.getPrompt());
+        drawReqVO.setPrompt(AppPromptBuildUtils.buildImagePrompt(
+                reqVO.getPrompt(), reqVO.getStyle(), reqVO.getNegativePrompt(),
+                reqVO.getWidth() != null ? reqVO.getWidth() : 1024,
+                reqVO.getHeight() != null ? reqVO.getHeight() : 1024));
         drawReqVO.setModelId(reqVO.getModelId());
         drawReqVO.setWidth(reqVO.getWidth() != null ? reqVO.getWidth() : 1024);
         drawReqVO.setHeight(reqVO.getHeight() != null ? reqVO.getHeight() : 1024);
+        if (reqVO.getStyle() != null) {
+            drawReqVO.setOptions(Map.of("style", reqVO.getStyle()));
+        }
 
         Long imageId = imageService.drawImage(userId, drawReqVO);
         return success(imageId);

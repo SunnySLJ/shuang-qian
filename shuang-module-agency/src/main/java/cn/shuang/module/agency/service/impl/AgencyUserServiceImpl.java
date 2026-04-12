@@ -39,6 +39,66 @@ public class AgencyUserServiceImpl implements AgencyUserService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public boolean createAgencyRelation(Long userId, Long inviterId) {
+        if (userId == null || inviterId == null || userId.equals(inviterId)) {
+            log.warn("[createAgencyRelation] 参数无效 userId={}, inviterId={}", userId, inviterId);
+            return false;
+        }
+
+        // 检查当前用户是否已绑定
+        AgencyUserDO existing = agencyUserMapper.selectByUserId(userId);
+        if (existing != null) {
+            log.warn("[createAgencyRelation] 用户 {} 已绑定代理，忽略邀请码绑定", userId);
+            return false;
+        }
+
+        // 查询或创建上级的代理记录
+        AgencyUserDO inviterAgency = agencyUserMapper.selectByUserId(inviterId);
+        if (inviterAgency == null) {
+            // 上级还没有代理记录，先创建（作为一级代理）
+            inviterAgency = AgencyUserDO.builder()
+                    .userId(inviterId)
+                    .parentAgencyId(null) // 一级代理无上级
+                    .level(1)
+                    .agencyEnabled(false)
+                    .bindMode(0)
+                    .totalPoints(0)
+                    .distributedPoints(0)
+                    .directInviteCount(0)
+                    .teamTotalCount(0)
+                    .build();
+            agencyUserMapper.insert(inviterAgency);
+            log.info("[createAgencyRelation] 为邀请人 {} 创建一级代理记录", inviterId);
+        }
+
+        // 创建当前用户的代理关系（二级代理）
+        AgencyUserDO agencyUser = AgencyUserDO.builder()
+                .userId(userId)
+                .parentAgencyId(inviterId)
+                .level(2)
+                .agencyEnabled(false)
+                .bindMode(1)
+                .totalPoints(0)
+                .distributedPoints(0)
+                .directInviteCount(0)
+                .teamTotalCount(0)
+                .build();
+
+        int result = agencyUserMapper.insert(agencyUser);
+        if (result > 0) {
+            // 更新上级的直推人数和团队总人数
+            agencyUserMapper.update(null,
+                new UpdateWrapper<AgencyUserDO>()
+                    .eq("user_id", inviterId)
+                    .setSql("direct_invite_count = direct_invite_count + 1"));
+            updateTeamTotalCount(inviterId, 1);
+            log.info("[createAgencyRelation] 用户 {} 成功绑定上级 {} (二级代理)", userId, inviterId);
+        }
+        return result > 0;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public boolean bindParentAgency(Long userId, Long parentAgencyId) {
         // 检查是否已经绑定
         AgencyUserDO existing = agencyUserMapper.selectByUserId(userId);

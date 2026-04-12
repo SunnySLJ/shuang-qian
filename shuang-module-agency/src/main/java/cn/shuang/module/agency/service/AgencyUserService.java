@@ -21,6 +21,15 @@ public interface AgencyUserService {
     AgencyUserDO getAgencyByUserId(Long userId);
 
     /**
+     * 通过邀请码创建代理关系（自动创建上级代理记录如不存在）
+     *
+     * @param userId      新用户 ID
+     * @param inviterId   邀请人 userId
+     * @return 是否成功（userId已绑定或inviterId不存在时返回false）
+     */
+    boolean createAgencyRelation(Long userId, Long inviterId);
+
+    /**
      * 绑定上级代理
      *
      * @param userId 用户 ID
@@ -29,6 +38,8 @@ public interface AgencyUserService {
      */
     boolean bindParentAgency(Long userId, Long parentAgencyId);
 
+    /**
+     * 升级为一级代理
     /**
      * 升级为一级代理
      *

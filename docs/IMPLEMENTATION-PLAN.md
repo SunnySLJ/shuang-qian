@@ -28,20 +28,19 @@ shuang-qian/
 | pay | 支付基础框架 | 微信/支付宝充值接口 | 50% |
 | mall | 分销/佣金功能 | 代理分成结算 | 70% |
 
-### 1.2 前端项目 (shuang-qian-ui)
+### 1.2 前端项目 (shuang-ui/zhuimeng-dream)
 
 **技术栈：** Vue 3 + TypeScript + Vite
 
-**现有 API 文件：**
+**现有前端结构：**
 ```
-src/api/
-├── agency/
-│   └── user.ts                 # 代理用户 API ✅
-├── ai/
-│   ├── chat/                   # AI 对话 ✅
-│   ├── image/                  # AI 生图 ✅
-│   ├── workflow/               # 工作流 ✅
-│   └── ...
+shuang-ui/
+└── zhuimeng-dream/
+    ├── src/views/              # 页面视图
+    ├── src/api/                # 前端 API 封装
+    ├── src/router/             # 路由配置
+    ├── src/components/         # 组件
+    └── vite.config.ts          # Vite 配置
 ```
 
 **需新增页面：**

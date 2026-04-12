@@ -23,6 +23,7 @@ CREATE TABLE `agency_commission_record` (
     `order_id`            BIGINT       DEFAULT NULL COMMENT '关联订单 ID',
     `amount`              INT          NOT NULL COMMENT '分成金额（积分，单位：分）',
     `commission_rate`     INT          NOT NULL COMMENT '分成比例（万分比）',
+    `level`              TINYINT      DEFAULT NULL COMMENT '代理层级：1-一级代理（直接上级），2-二级代理（间接上级）',
     `status`              TINYINT      NOT NULL DEFAULT 0 COMMENT '状态：0-待结算，1-已结算，2-已取消',
     `settle_time`         DATETIME     DEFAULT NULL COMMENT '结算时间',
     `remark`              VARCHAR(255) DEFAULT NULL COMMENT '备注',
@@ -33,7 +34,8 @@ CREATE TABLE `agency_commission_record` (
     KEY `idx_user_id` (`user_id`),
     KEY `idx_brokerage_user_id` (`brokerage_user_id`),
     KEY `idx_biz_order_no` (`biz_order_no`),
-    KEY `idx_status` (`status`)
+    KEY `idx_status` (`status`),
+    UNIQUE KEY `uk_biz_order_brokerage_level` (`biz_order_no`, `brokerage_user_id`, `level`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='佣金记录表';
 
 -- =============================================

@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.annotation.Resource;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,6 +26,8 @@ import java.util.List;
 @Slf4j
 public class CommissionServiceImpl implements CommissionService {
 
+    private static final int MAX_PARENT_CHAIN_DEPTH = 2;
+
     @Resource
     private AgencyUserMapper agencyUserMapper;
 
@@ -33,6 +36,26 @@ public class CommissionServiceImpl implements CommissionService {
 
     @Resource
     private WalletService walletService;
+
+    /**
+     * 构建上级代理链（最多 N 级）
+     *
+     * @param startParentId 起始上级 ID（当前用户的直接上级 ID）
+     * @param maxDepth     最大深度
+     * @return 按层级顺序排列的上级代理列表（index 0 = 一级代理，index 1 = 二级代理）
+     */
+    private List<AgencyUserDO> buildParentChain(Long startParentId, int maxDepth) {
+        List<AgencyUserDO> chain = new ArrayList<>();
+        Long currentParentId = startParentId;
+        for (int i = 0; i < maxDepth; i++) {
+            if (currentParentId == null) break;
+            AgencyUserDO parent = agencyUserMapper.selectById(currentParentId);
+            if (parent == null) break;
+            chain.add(parent);
+            currentParentId = parent.getParentAgencyId();
+        }
+        return chain;
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -46,59 +69,85 @@ public class CommissionServiceImpl implements CommissionService {
             return null;
         }
 
-        // 2. 查询上级代理信息
-        AgencyUserDO agent = agencyUserMapper.selectById(user.getParentAgencyId());
-        if (agent == null || !agent.getAgencyEnabled()) {
-            log.info("[CommissionService] 上级代理不存在或未启用 - parentAgencyId: {}", user.getParentAgencyId());
+        // 2. 构建上级代理链（最多支持两级）
+        List<AgencyUserDO> chain = buildParentChain(user.getParentAgencyId(), MAX_PARENT_CHAIN_DEPTH);
+        if (chain.isEmpty()) {
+            log.info("[CommissionService] 上级代理链为空，跳过分成 - userId: {}", userId);
             return null;
         }
 
-        // 3. 获取分成比例
-        Integer commissionRate = AgencyLevelEnum.getCommissionRateByLevel(agent.getLevel());
-        if (commissionRate == null || commissionRate <= 0) {
-            log.warn("[CommissionService] 代理等级无效 - level: {}", agent.getLevel());
-            return null;
+        Long lastRecordId = null;
+        // 3. 遍历每一级代理，分别计算分佣
+        for (int i = 0; i < chain.size(); i++) {
+            AgencyUserDO agent = chain.get(i);
+            if (agent == null || !agent.getAgencyEnabled()) {
+                log.info("[CommissionService] 第{}级代理不存在或未启用，跳过", i + 1);
+                continue;
+            }
+
+            // 获取分佣比例（一级代理按自己的等级比例，间接上级按二级分佣比例）
+            Integer commissionRate = i == 0
+                    ? AgencyLevelEnum.getCommissionRateByLevel(agent.getLevel())
+                    : AgencyLevelEnum.getSecondaryCommissionRate();
+            if (commissionRate == null || commissionRate <= 0) {
+                log.info("[CommissionService] 第{}级代理分佣比例为0，跳过 - agentId: {}", i + 1, agent.getUserId());
+                continue;
+            }
+
+            // 计算分成金额（万分比）
+            Integer commissionAmount = rechargeAmount * commissionRate / 10000;
+            if (commissionAmount <= 0) {
+                log.info("[CommissionService] 第{}级代理分成金额为0，跳过 - rate: {}", i + 1, commissionRate);
+                continue;
+            }
+
+            // 幂等检查（同一订单号 + 同一代理 + 同一层级）
+            Integer level = i + 1;
+            CommissionRecordDO existing = commissionRecordMapper.selectByBizOrderNoAndLevel(
+                    bizOrderNo, agent.getUserId(), level);
+            if (existing != null) {
+                log.info("[CommissionService] 第{}级代理已分佣，跳过 - orderNo: {}, agentId: {}",
+                        level, bizOrderNo, agent.getUserId());
+                lastRecordId = existing.getId();
+                continue;
+            }
+
+            // 创建佣金记录
+            String remark = i == 0
+                    ? "充值分成-一级代理，比例：" + (commissionRate / 100.0) + "%"
+                    : "充值分成-二级代理(间接上级)，比例：" + (commissionRate / 100.0) + "%";
+            CommissionRecordDO record = CommissionRecordDO.builder()
+                    .userId(userId)
+                    .brokerageUserId(agent.getUserId())
+                    .bizType(CommissionBizTypeEnum.RECHARGE.getType())
+                    .bizOrderNo(bizOrderNo)
+                    .amount(commissionAmount)
+                    .commissionRate(commissionRate)
+                    .level(level)
+                    .status(1)
+                    .settleTime(LocalDateTime.now())
+                    .remark(remark)
+                    .build();
+            commissionRecordMapper.insert(record);
+            lastRecordId = record.getId();
+
+            // 增加代理钱包积分
+            try {
+                walletService.addPoints(agent.getUserId(), commissionAmount, 3, bizOrderNo,
+                        String.format("下级充值分成(第%d级) - 订单：%s", level, bizOrderNo));
+                log.info("[CommissionService] 第{}级代理充值分成成功 - agentId: {}, amount: {}",
+                        level, agent.getUserId(), commissionAmount);
+            } catch (Exception e) {
+                log.error("[CommissionService] 增加钱包积分失败 - agentId: {}, amount: {}",
+                        agent.getUserId(), commissionAmount, e);
+                record.setStatus(2);
+                commissionRecordMapper.updateById(record);
+                throw e;
+            }
         }
 
-        // 4. 计算分成金额（万分比）
-        Integer commissionAmount = rechargeAmount * commissionRate / 10000;
-        if (commissionAmount <= 0) {
-            log.info("[CommissionService] 分成金额为 0，跳过 - rate: {}, amount: {}", commissionRate, rechargeAmount);
-            return null;
-        }
-
-        // 5. 创建佣金记录
-        CommissionRecordDO record = CommissionRecordDO.builder()
-                .userId(userId)
-                .brokerageUserId(agent.getUserId())
-                .bizType(CommissionBizTypeEnum.RECHARGE.getType())
-                .bizOrderNo(bizOrderNo)
-                .amount(commissionAmount)
-                .commissionRate(commissionRate)
-                .status(1) // 直接标记为已结算
-                .settleTime(LocalDateTime.now())
-                .remark("充值分成 - 等级：" + agent.getLevel() + "，比例：" + (commissionRate / 100.0) + "%")
-                .build();
-        commissionRecordMapper.insert(record);
-
-        // 6. 增加代理钱包积分
-        try {
-            walletService.addPoints(agent.getUserId(), commissionAmount, 3, bizOrderNo,
-                    String.format("下级充值分成 - 订单：%s", bizOrderNo));
-            log.info("[CommissionService] 充值分成成功 - agentId: {}, amount: {}, balance: {}",
-                    agent.getUserId(), commissionAmount, commissionAmount);
-        } catch (Exception e) {
-            log.error("[CommissionService] 增加钱包积分失败 - agentId: {}, amount: {}", agent.getUserId(), commissionAmount, e);
-            // 回滚佣金记录状态
-            record.setStatus(2); // 已取消
-            commissionRecordMapper.updateById(record);
-            throw e;
-        }
-
-        log.info("[CommissionService] 充值分成完成 - userId: {}, agentId: {}, amount: {}, rate: {}",
-                userId, agent.getUserId(), commissionAmount, commissionRate);
-
-        return record.getId();
+        log.info("[CommissionService] 充值分成完成 - userId: {}, orderNo: {}", userId, bizOrderNo);
+        return lastRecordId;
     }
 
     @Override
@@ -113,62 +162,88 @@ public class CommissionServiceImpl implements CommissionService {
             return null;
         }
 
-        // 2. 查询上级代理信息
-        AgencyUserDO agent = agencyUserMapper.selectById(user.getParentAgencyId());
-        if (agent == null || !agent.getAgencyEnabled()) {
-            log.info("[CommissionService] 上级代理不存在或未启用 - parentAgencyId: {}", user.getParentAgencyId());
+        // 2. 构建上级代理链（最多支持两级）
+        List<AgencyUserDO> chain = buildParentChain(user.getParentAgencyId(), MAX_PARENT_CHAIN_DEPTH);
+        if (chain.isEmpty()) {
+            log.info("[CommissionService] 上级代理链为空，跳过分成 - userId: {}", userId);
             return null;
         }
 
-        // 3. 获取分成比例（消费分成使用相同的比例）
-        Integer commissionRate = AgencyLevelEnum.getCommissionRateByLevel(agent.getLevel());
-        if (commissionRate == null || commissionRate <= 0) {
-            log.warn("[CommissionService] 代理等级无效 - level: {}", agent.getLevel());
-            return null;
+        Long lastRecordId = null;
+        // 3. 遍历每一级代理，分别计算分佣
+        for (int i = 0; i < chain.size(); i++) {
+            AgencyUserDO agent = chain.get(i);
+            if (agent == null || !agent.getAgencyEnabled()) {
+                log.info("[CommissionService] 第{}级代理不存在或未启用，跳过", i + 1);
+                continue;
+            }
+
+            // 获取分佣比例（一级代理按自己的等级比例，间接上级按二级分佣比例）
+            Integer commissionRate = i == 0
+                    ? AgencyLevelEnum.getCommissionRateByLevel(agent.getLevel())
+                    : AgencyLevelEnum.getSecondaryCommissionRate();
+            if (commissionRate == null || commissionRate <= 0) {
+                log.info("[CommissionService] 第{}级代理分佣比例为0，跳过 - agentId: {}", i + 1, agent.getUserId());
+                continue;
+            }
+
+            // 计算分成金额（万分比）
+            Integer commissionAmount = consumeAmount * commissionRate / 10000;
+            if (commissionAmount <= 0) {
+                log.info("[CommissionService] 第{}级代理分成金额为0，跳过 - rate: {}", i + 1, commissionRate);
+                continue;
+            }
+
+            // 幂等检查（同一订单号 + 同一代理 + 同一层级）
+            Integer level = i + 1;
+            CommissionRecordDO existing = commissionRecordMapper.selectByBizOrderNoAndLevel(
+                    bizOrderNo, agent.getUserId(), level);
+            if (existing != null) {
+                log.info("[CommissionService] 第{}级代理已分佣，跳过 - orderNo: {}, agentId: {}",
+                        level, bizOrderNo, agent.getUserId());
+                lastRecordId = existing.getId();
+                continue;
+            }
+
+            // 创建佣金记录
+            String remark = i == 0
+                    ? "消费分成-一级代理，比例：" + (commissionRate / 100.0) + "%"
+                    : "消费分成-二级代理(间接上级)，比例：" + (commissionRate / 100.0) + "%";
+            CommissionRecordDO record = CommissionRecordDO.builder()
+                    .userId(userId)
+                    .brokerageUserId(agent.getUserId())
+                    .bizType(CommissionBizTypeEnum.CONSUME.getType())
+                    .bizOrderNo(bizOrderNo)
+                    .amount(commissionAmount)
+                    .commissionRate(commissionRate)
+                    .level(level)
+                    .status(1)
+                    .settleTime(LocalDateTime.now())
+                    .remark(remark)
+                    .build();
+            commissionRecordMapper.insert(record);
+            lastRecordId = record.getId();
+
+            // 增加代理钱包积分
+            try {
+                walletService.addPoints(agent.getUserId(), commissionAmount, 3, bizOrderNo,
+                        String.format("下级消费分成(第%d级) - 订单：%s", level, bizOrderNo));
+                log.info("[CommissionService] 第{}级代理消费分成成功 - agentId: {}, amount: {}",
+                        level, agent.getUserId(), commissionAmount);
+            } catch (Exception e) {
+                log.error("[CommissionService] 增加钱包积分失败 - agentId: {}, amount: {}",
+                        agent.getUserId(), commissionAmount, e);
+                record.setStatus(2);
+                commissionRecordMapper.updateById(record);
+                throw e;
+            }
+
+            // 更新代理累计佣金
+            agencyUserMapper.addTotalCommission(agent.getId(), commissionAmount);
         }
 
-        // 4. 计算分成金额（消费分成按消费金额的一定比例）
-        // 注意：这里是按消费积分的百分比返还给代理
-        Integer commissionAmount = consumeAmount * commissionRate / 10000;
-        if (commissionAmount <= 0) {
-            log.info("[CommissionService] 分成金额为 0，跳过 - rate: {}, amount: {}", commissionRate, consumeAmount);
-            return null;
-        }
-
-        // 5. 创建佣金记录
-        CommissionRecordDO record = CommissionRecordDO.builder()
-                .userId(userId)
-                .brokerageUserId(agent.getUserId())
-                .bizType(CommissionBizTypeEnum.CONSUME.getType())
-                .bizOrderNo(bizOrderNo)
-                .amount(commissionAmount)
-                .commissionRate(commissionRate)
-                .status(1) // 直接标记为已结算
-                .settleTime(LocalDateTime.now())
-                .remark("消费分成 - 等级：" + agent.getLevel() + "，比例：" + (commissionRate / 100.0) + "%")
-                .build();
-        commissionRecordMapper.insert(record);
-
-        // 6. 增加代理钱包积分
-        try {
-            walletService.addPoints(agent.getUserId(), commissionAmount, 3, bizOrderNo,
-                    String.format("下级消费分成 - 订单：%s", bizOrderNo));
-            log.info("[CommissionService] 消费分成成功 - agentId: {}, amount: {}", agent.getUserId(), commissionAmount);
-        } catch (Exception e) {
-            log.error("[CommissionService] 增加钱包积分失败 - agentId: {}, amount: {}", agent.getUserId(), commissionAmount, e);
-            // 回滚佣金记录状态
-            record.setStatus(2); // 已取消
-            commissionRecordMapper.updateById(record);
-            throw e;
-        }
-
-        // 7. 更新代理累计佣金
-        agencyUserMapper.addTotalCommission(agent.getId(), commissionAmount);
-
-        log.info("[CommissionService] 消费分成完成 - userId: {}, agentId: {}, amount: {}, rate: {}",
-                userId, agent.getUserId(), commissionAmount, commissionRate);
-
-        return record.getId();
+        log.info("[CommissionService] 消费分成完成 - userId: {}, orderNo: {}", userId, bizOrderNo);
+        return lastRecordId;
     }
 
     @Override
@@ -183,7 +258,6 @@ public class CommissionServiceImpl implements CommissionService {
         if (agent == null) {
             return 0;
         }
-        // 从记录中统计
         return commissionRecordMapper.sumTotalCommission(brokerageUserId);
     }
 
@@ -231,7 +305,6 @@ public class CommissionServiceImpl implements CommissionService {
                 }
             } catch (Exception e) {
                 log.error("[CommissionService] 结算单条佣金失败 - recordId: {}", record.getId(), e);
-                // 继续结算其他记录
             }
         }
 
@@ -248,7 +321,6 @@ public class CommissionServiceImpl implements CommissionService {
             return false;
         }
 
-        // 更新状态为已取消
         record.setStatus(2);
         commissionRecordMapper.updateById(record);
 

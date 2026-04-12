@@ -42,6 +42,14 @@ public interface AiImageMapper extends BaseMapperX<AiImageDO> {
                 .orderByDesc(AiImageDO::getId));
     }
 
+    default PageResult<AiImageDO> selectVideoPageMy(Long userId, AiImagePageReqVO reqVO) {
+        return selectPage(reqVO, new LambdaQueryWrapperX<AiImageDO>()
+                .likeIfPresent(AiImageDO::getPrompt, reqVO.getPrompt())
+                .eq(AiImageDO::getUserId, userId)
+                .lt(AiImageDO::getGenerationType, 0)
+                .orderByDesc(AiImageDO::getId));
+    }
+
     default PageResult<AiImageDO> selectPage(AiImagePublicPageReqVO pageReqVO) {
         return selectPage(pageReqVO, new LambdaQueryWrapperX<AiImageDO>()
                 .eqIfPresent(AiImageDO::getPublicStatus, Boolean.TRUE)

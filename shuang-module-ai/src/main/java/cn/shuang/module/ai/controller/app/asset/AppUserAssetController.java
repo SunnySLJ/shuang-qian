@@ -26,7 +26,7 @@ import static cn.shuang.framework.common.pojo.CommonResult.success;
  */
 @Tag(name = "用户 APP - 用户资产")
 @RestController
-@RequestMapping("/app/ai/asset")
+@RequestMapping("/ai/asset")
 @Validated
 public class AppUserAssetController {
 

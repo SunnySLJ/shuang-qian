@@ -18,6 +18,7 @@ import cn.shuang.module.infra.framework.file.core.utils.FileTypeUtils;
 import com.google.common.annotations.VisibleForTesting;
 import jakarta.annotation.Resource;
 import lombok.SneakyThrows;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -54,6 +55,9 @@ public class FileServiceImpl implements FileService {
     @Resource
     private FileMapper fileMapper;
 
+    @Value("${yudao.file.default-directory:}")
+    private String defaultDirectory;
+
     @Override
     public PageResult<FileDO> getFilePage(FilePageReqVO pageReqVO) {
         return fileMapper.selectPage(pageReqVO);
@@ -62,6 +66,7 @@ public class FileServiceImpl implements FileService {
     @Override
     @SneakyThrows
     public String createFile(byte[] content, String name, String directory, String type) {
+        directory = resolveDirectory(directory);
         // 1.1 处理 type 为空的情况
         if (StrUtil.isEmpty(type)) {
             type = FileTypeUtils.getMineType(content, name);
@@ -127,6 +132,7 @@ public class FileServiceImpl implements FileService {
     @Override
     @SneakyThrows
     public FilePresignedUrlRespVO presignPutUrl(String name, String directory) {
+        directory = resolveDirectory(directory);
         // 1. 生成上传的 path，需要保证唯一
         String path = generateUploadPath(name, directory);
 
@@ -201,6 +207,10 @@ public class FileServiceImpl implements FileService {
         FileClient client = fileConfigService.getFileClient(configId);
         Assert.notNull(client, "客户端({}) 不能为空", configId);
         return client.getContent(path);
+    }
+
+    private String resolveDirectory(String directory) {
+        return StrUtil.blankToDefault(StrUtil.trim(directory), StrUtil.trim(defaultDirectory));
     }
 
 }

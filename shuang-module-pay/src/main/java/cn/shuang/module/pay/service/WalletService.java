@@ -119,4 +119,20 @@ public interface WalletService {
      */
     WalletDO getWalletDetail(Long userId);
 
+    /**
+     * 根据业务记录 ID 查询积分流水
+     *
+     * @param recordId 业务记录 ID（从 description 中提取）
+     * @return 流水记录，不存在返回 null
+     */
+    WalletTransactionDO getTransactionByRecord(Long recordId);
+
+    /**
+     * 根据业务订单号查询积分流水（用于退款时找回原始扣减金额）
+     *
+     * @param bizOrderNo 业务订单号
+     * @return 流水记录，不存在返回 null
+     */
+    WalletTransactionDO getTransactionByBizOrderNo(String bizOrderNo);
+
 }

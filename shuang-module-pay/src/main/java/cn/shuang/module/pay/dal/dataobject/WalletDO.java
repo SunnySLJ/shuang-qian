@@ -72,4 +72,10 @@ public class WalletDO extends BaseDO {
      */
     private LocalDateTime expireTime;
 
+    /**
+     * 乐观锁版本号
+     */
+    @Version
+    private Integer version;
+
 }

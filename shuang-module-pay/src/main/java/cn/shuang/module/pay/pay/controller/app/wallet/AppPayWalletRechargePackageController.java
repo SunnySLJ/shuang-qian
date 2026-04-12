@@ -3,12 +3,14 @@ package cn.shuang.module.pay.controller.app.wallet;
 import cn.shuang.framework.common.enums.CommonStatusEnum;
 import cn.shuang.framework.common.pojo.CommonResult;
 import cn.shuang.framework.common.util.object.BeanUtils;
+import cn.shuang.framework.security.core.util.SecurityFrameworkUtils;
 import cn.shuang.module.pay.controller.app.wallet.vo.recharge.AppPayWalletPackageRespVO;
 import cn.shuang.module.pay.dal.dataobject.wallet.PayWalletRechargePackageDO;
 import cn.shuang.module.pay.service.wallet.PayWalletRechargePackageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
+import jakarta.annotation.security.PermitAll;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,6 +34,7 @@ public class AppPayWalletRechargePackageController {
 
     @GetMapping("/list")
     @Operation(summary = "获得钱包充值套餐列表")
+    @PermitAll
     public CommonResult<List<AppPayWalletPackageRespVO>> getWalletRechargePackageList() {
         List<PayWalletRechargePackageDO> list = walletRechargePackageService.getWalletRechargePackageList(
                 CommonStatusEnum.ENABLE.getStatus());

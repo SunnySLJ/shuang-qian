@@ -4,7 +4,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 /**
  * AI 视频生成请求 VO
@@ -15,12 +14,6 @@ import jakarta.validation.constraints.NotNull;
 public class AiVideoGenerateReqVO {
 
     /**
-     * 用户 ID
-     */
-    @NotNull(message = "用户 ID 不能为空")
-    private Long userId;
-
-    /**
      * 提示词
      */
     @NotBlank(message = "提示词不能为空")
@@ -29,7 +22,6 @@ public class AiVideoGenerateReqVO {
     /**
      * 模型 ID
      */
-    @NotNull(message = "模型 ID 不能为空")
     private Long modelId;
 
     /**
@@ -38,8 +30,44 @@ public class AiVideoGenerateReqVO {
     private Integer duration = 5;
 
     /**
+     * 画面比例
+     */
+    private String ratio;
+
+    /**
+     * 生成风格类型
+     */
+    private String styleType;
+
+    /**
+     * 视觉风格
+     */
+    private String visualStyle;
+
+    /**
+     * 运镜方式
+     */
+    private String cameraMovement;
+
+    /**
+     * 画面重点
+     */
+    private String shotFocus;
+
+    /**
+     * 质量等级
+     */
+    private String qualityLevel;
+
+    /**
      * 参考图片 URL（图生视频用）
      */
     private String imageUrl;
+
+    /**
+     * 客户端请求 ID（用于幂等）
+     */
+    @Schema(description = "客户端请求 ID，用于幂等控制")
+    private String clientId;
 
 }

@@ -27,6 +27,8 @@ import cn.shuang.module.system.enums.logger.LoginResultEnum;
 import cn.shuang.module.system.enums.oauth2.OAuth2ClientConstants;
 import cn.shuang.module.system.enums.sms.SmsSceneEnum;
 import cn.shuang.module.system.enums.social.SocialTypeEnum;
+import cn.shuang.module.agency.service.AgencyUserService;
+import cn.shuang.module.member.util.InviteCodeUtil;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -60,6 +62,9 @@ public class MemberAuthServiceImpl implements MemberAuthService {
     private SocialClientApi socialClientApi;
     @Resource
     private OAuth2TokenCommonApi oauth2TokenApi;
+
+    @Resource
+    private AgencyUserService agencyUserService;
 
     @Resource
     private ShuangProProperties shuangProProperties;
@@ -299,10 +304,19 @@ public class MemberAuthServiceImpl implements MemberAuthService {
         MemberUserDO user = userService.createUserWithPassword(reqVO.getMobile(), reqVO.getPassword(),
                 userIp, getTerminal());
 
-        // 4. 处理邀请码（如果有）
+        // 4. 处理邀请码绑定
         if (StrUtil.isNotBlank(reqVO.getInviteCode())) {
-            // TODO: 处理邀请码绑定逻辑
-            log.info("[register] 用户 {} 使用邀请码 {} 注册", user.getId(), reqVO.getInviteCode());
+            Long inviterId = InviteCodeUtil.decode(reqVO.getInviteCode());
+            if (inviterId != null && !inviterId.equals(user.getId())) {
+                boolean bound = agencyUserService.createAgencyRelation(user.getId(), inviterId);
+                if (bound) {
+                    log.info("[register] 用户 {} 成功绑定上级代理 {}", user.getId(), inviterId);
+                } else {
+                    log.warn("[register] 用户 {} 绑定上级代理 {} 失败（可能已绑定或上级不存在）", user.getId(), inviterId);
+                }
+            } else {
+                log.warn("[register] 邀请码 {} 解码失败或与注册用户ID相同，跳过绑定", reqVO.getInviteCode());
+            }
         }
 
         // 5. 记录注册日志

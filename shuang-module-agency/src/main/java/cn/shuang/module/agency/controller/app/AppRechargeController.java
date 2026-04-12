@@ -33,7 +33,7 @@ import static cn.shuang.framework.common.pojo.CommonResult.success;
  */
 @Tag(name = "用户 APP - 积分充值")
 @RestController
-@RequestMapping("/app/recharge")
+@RequestMapping("/recharge")
 @Validated
 @Slf4j
 public class AppRechargeController {

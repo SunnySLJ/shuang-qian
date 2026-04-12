@@ -76,6 +76,18 @@ public interface WalletMapper extends BaseMapper<WalletDO> {
     int deductBalance(@Param("userId") Long userId, @Param("amount") Integer amount);
 
     /**
+     * 乐观锁扣减余额（推荐）
+     *
+     * @param userId 用户 ID
+     * @param amount 金额
+     * @param version 当前版本号
+     * @return 影响行数，0 表示乐观锁冲突或余额不足
+     */
+    @Update("UPDATE pay_wallet SET balance = balance - #{amount}, total_used = total_used + #{amount}, version = version + 1, update_time = NOW() " +
+            "WHERE user_id = #{userId} AND balance >= #{amount} AND version = #{version} AND deleted = 0")
+    int deductBalanceWithVersion(@Param("userId") Long userId, @Param("amount") Integer amount, @Param("version") Integer version);
+
+    /**
      * 查询流水列表
      *
      * @param userId 用户 ID

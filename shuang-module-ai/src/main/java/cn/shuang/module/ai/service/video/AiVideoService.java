@@ -1,8 +1,11 @@
 package cn.shuang.module.ai.service.video;
 
 import cn.shuang.module.ai.controller.admin.image.vo.AiImagePageReqVO;
+import cn.shuang.module.ai.controller.app.video.vo.AiVideoResolveRespVO;
 import cn.shuang.module.ai.dal.dataobject.image.AiImageDO;
 import cn.shuang.framework.common.pojo.PageResult;
+
+import java.util.Map;
 
 /**
  * AI 视频生成 Service 接口
@@ -20,7 +23,7 @@ public interface AiVideoService {
      * @param duration 视频时长（秒）
      * @return 生成记录 ID
      */
-    Long textToVideo(Long userId, String prompt, Long modelId, Integer duration);
+    Long textToVideo(Long userId, String prompt, Long modelId, Integer duration, Map<String, Object> options);
 
     /**
      * 图生视频
@@ -32,7 +35,8 @@ public interface AiVideoService {
      * @param duration 视频时长（秒）
      * @return 生成记录 ID
      */
-    Long imageToVideo(Long userId, String imageUrl, String prompt, Long modelId, Integer duration);
+    Long imageToVideo(Long userId, String imageUrl, String prompt, Long modelId, Integer duration,
+                      Map<String, Object> options);
 
     /**
      * 黄金 6 秒拼接
@@ -62,7 +66,7 @@ public interface AiVideoService {
      * @param modelId 模型 ID
      * @return 生成记录 ID
      */
-    Long extractScript(Long userId, String videoUrl, Long modelId);
+    Long extractScript(Long userId, String videoUrl, Long modelId, String provider);
 
     /**
      * 视频拆解 - 分析元素
@@ -72,7 +76,7 @@ public interface AiVideoService {
      * @param modelId 模型 ID
      * @return 生成记录 ID
      */
-    Long analyzeElements(Long userId, String videoUrl, Long modelId);
+    Long analyzeElements(Long userId, String videoUrl, Long modelId, String provider);
 
     /**
      * 视频拆解 - 生成提示词
@@ -82,7 +86,7 @@ public interface AiVideoService {
      * @param modelId 模型 ID
      * @return 生成记录 ID
      */
-    Long generatePrompt(Long userId, String videoUrl, Long modelId);
+    Long generatePrompt(Long userId, String videoUrl, Long modelId, String provider);
 
     /**
      * 获取视频生成记录列表
@@ -108,5 +112,13 @@ public interface AiVideoService {
      * @return 是否更新成功
      */
     boolean syncVideoStatus(Long id);
+
+    /**
+     * 解析分享文案中的视频链接
+     *
+     * @param rawText 分享文案或链接
+     * @return 解析结果
+     */
+    AiVideoResolveRespVO resolveVideoUrl(String rawText);
 
 }

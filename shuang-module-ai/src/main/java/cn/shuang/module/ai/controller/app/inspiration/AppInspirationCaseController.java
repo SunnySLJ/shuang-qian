@@ -30,7 +30,7 @@ import static cn.shuang.framework.common.pojo.CommonResult.success;
  */
 @Tag(name = "用户 APP - 灵感案例")
 @RestController
-@RequestMapping("/app/ai/inspiration")
+@RequestMapping("/ai/inspiration")
 @Validated
 public class AppInspirationCaseController {
 

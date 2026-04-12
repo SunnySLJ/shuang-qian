@@ -47,16 +47,16 @@ cd /Users/h/Desktop/shuang-qian
 ./script/shutdown.sh
 ```
 
-> 启动脚本会依次检查 MySQL、Redis 数据库状态，自动初始化表结构，编译后端 JAR，然后同时启动后端（端口 48080）和前端（端口 5173）。
+> 启动脚本会依次检查 MySQL、Redis 数据库状态，自动初始化表结构，编译后端 JAR，然后同时启动后端（端口 48080）和前端（端口 8888）。
 
 ### 访问地址
 
 | 服务 | 地址 |
 |------|------|
-| 前端界面 | http://localhost:5173 |
+| 前端界面 | http://localhost:8888 |
 | 后端接口 | http://localhost:48080 |
 | 接口文档 | http://localhost:48080/swagger-ui |
-| 爆款拆解 | http://localhost:5173/ai/video/analyze |
+| 爆款拆解 | http://localhost:8888/ai/video/analyze |
 
 ## 项目结构
 
@@ -75,6 +75,8 @@ shuang-pro/
 │   ├── shuang-module-trade/      # 交易模块
 │   └── shuang-module-statistics/ # 统计模块
 ├── shuang-module-ai/             # AI 生成模块
+├── shuang-ui/                    # Vue 前端目录
+│   └── zhuimeng-dream/           # 当前使用的 Vite 前端
 └── shuang-module-agency/         # 代理管理模块
 ```
 

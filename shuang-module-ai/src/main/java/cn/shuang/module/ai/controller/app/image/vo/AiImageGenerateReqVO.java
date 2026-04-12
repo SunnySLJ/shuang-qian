@@ -39,4 +39,7 @@ public class AiImageGenerateReqVO {
     @Schema(description = "负面提示词", example = "低质量,模糊")
     private String negativePrompt;
 
+    @Schema(description = "客户端请求 ID，用于幂等控制")
+    private String clientId;
+
 }

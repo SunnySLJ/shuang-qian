@@ -35,7 +35,7 @@
 
 **现状**
 
-后端三个接口已就绪，但 `yudao-ui/zhuimeng-dream/src/api/ai/video.ts` 中没有任何视频拆解相关的前端调用方法。前端团队无法接入。
+后端三个接口已就绪，但当前前端项目 `shuang-ui/zhuimeng-dream` 中没有任何视频拆解相关的调用封装和页面入口。前端团队无法接入。
 
 **影响**
 
@@ -126,7 +126,7 @@ catch (Exception e) {
 
 ### 方案 1：前端 API 层补全
 
-在 `yudao-ui/zhuimeng-dream/src/api/ai/video.ts` 中补充三个接口的调用方法：
+在 `shuang-ui/zhuimeng-dream` 中补充三个接口的调用方法：
 
 ```typescript
 // ============== 视频拆解 API ==============
@@ -160,7 +160,7 @@ export function generatePrompt(data: {
 
 ### 方案 2：创建独立视频拆解页面
 
-新建页面：`src/views/ai/VideoAnalyzePage.vue`
+新建页面：`shuang-ui/zhuimeng-dream/src/views/ai/VideoAnalyzePage.vue`
 
 #### 2.1 页面布局
 

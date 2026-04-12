@@ -7,9 +7,13 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+if [ -f "$SCRIPT_DIR/pom.xml" ] && [ -d "$SCRIPT_DIR/shuang-server" ]; then
+    PROJECT_DIR="$SCRIPT_DIR"
+else
+    PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+fi
 BACKEND_DIR="$PROJECT_DIR/shuang-server"
-FRONTEND_DIR="$PROJECT_DIR/yudao-ui/zhuimeng-dream"
+FRONTEND_DIR="$PROJECT_DIR/shuang-ui/zhuimeng-dream"
 JAR_FILE="$BACKEND_DIR/target/shuang-server.jar"
 
 # 颜色定义
@@ -51,9 +55,13 @@ log_ok "依赖检查通过"
 # ==================== 数据库检查 ====================
 log_info "检查 MySQL..."
 
-MYSQL_CMD="mysql -h 127.0.0.1 -P 3306 -u root -p'yaok@123'"
+MYSQL_HOST="127.0.0.1"
+MYSQL_PORT="3306"
+MYSQL_USER="root"
+MYSQL_PASSWORD="yaok@123"
+MYSQL_ARGS=(-h "$MYSQL_HOST" -P "$MYSQL_PORT" -u "$MYSQL_USER" "-p$MYSQL_PASSWORD")
 
-if ! $MYSQL_CMD -e "SELECT 1" &> /dev/null; then
+if ! mysql "${MYSQL_ARGS[@]}" -e "SELECT 1" &> /dev/null; then
     log_warn "MySQL 未运行，正在尝试启动..."
     if command -v mysql.server &> /dev/null; then
         mysql.server start 2>/dev/null || mysqld_safe --user=mysql &
@@ -61,13 +69,13 @@ if ! $MYSQL_CMD -e "SELECT 1" &> /dev/null; then
     fi
 fi
 
-if ! $MYSQL_CMD -e "SELECT 1" &> /dev/null; then
+if ! mysql "${MYSQL_ARGS[@]}" -e "SELECT 1" &> /dev/null; then
     log_error "MySQL 启动失败，请手动启动后重试"
     exit 1
 fi
 
 # 创建数据库（如果不存在）
-$MYSQL_CMD -e "CREATE DATABASE IF NOT EXISTS zhuimeng CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null
+mysql "${MYSQL_ARGS[@]}" -e "CREATE DATABASE IF NOT EXISTS zhuimeng CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>/dev/null
 log_ok "MySQL 就绪"
 
 # ==================== Redis 检查 ====================
@@ -89,7 +97,7 @@ fi
 # ==================== 表结构初始化 ====================
 log_info "检查数据库表结构..."
 
-TABLE_COUNT=$($MYSQL_CMD zhuimeng -N -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='zhuimeng';" 2>/dev/null)
+TABLE_COUNT=$(mysql "${MYSQL_ARGS[@]}" zhuimeng -N -e "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='zhuimeng';" 2>/dev/null)
 
 if [ "$TABLE_COUNT" -lt 10 ]; then
     log_warn "数据库表结构不完整，正在初始化..."
@@ -107,7 +115,7 @@ if [ "$TABLE_COUNT" -lt 10 ]; then
              "$SQL_DIR/agency-user-table.sql" \
              "$SQL_DIR/ai-user-asset-tables.sql"; do
         if [ -f "$f" ]; then
-            $MYSQL_CMD zhuimeng < "$f" 2>/dev/null || true
+            mysql "${MYSQL_ARGS[@]}" zhuimeng < "$f" 2>/dev/null || true
         fi
     done
 
@@ -135,9 +143,14 @@ check_port() {
     local name=$2
     if lsof -ti:$port &> /dev/null; then
         log_warn "$name 端口 $port 已被占用 (PID: $(lsof -ti:$port | head -1))"
-        read -p "是否停止旧进程? [Y/n]: " -n 1 -r
-        echo
-        if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+        if [ -t 0 ]; then
+            read -p "是否停止旧进程? [Y/n]: " -n 1 -r
+            echo
+        else
+            REPLY="Y"
+            log_info "检测到非交互环境，默认停止旧进程"
+        fi
+        if [[ ! ${REPLY:-Y} =~ ^[Nn]$ ]]; then
             lsof -ti:$port | xargs kill -9 2>/dev/null || true
             sleep 1
             log_info "已停止旧进程"
@@ -148,7 +161,7 @@ check_port() {
 }
 
 check_port 48080 "后端"
-check_port 5173 "前端"
+check_port 8888 "前端"
 
 # ==================== 启动后端 ====================
 log_info "启动后端 Spring Boot (端口 48080)..."
@@ -175,16 +188,16 @@ else
 fi
 
 # ==================== 启动前端 ====================
-log_info "启动前端 Vite 开发服务器 (端口 5173)..."
+log_info "启动前端 Vite 开发服务器 (端口 8888)..."
 
 cd "$FRONTEND_DIR"
-nohup npm run dev -- --port 5173 > /tmp/shuang-frontend.log 2>&1 &
+nohup npm run dev -- --port 8888 > /tmp/shuang-frontend.log 2>&1 &
 FRONTEND_PID=$!
 
 log_ok "前端启动中，PID: $FRONTEND_PID"
 sleep 5
 
-if curl -s http://localhost:5173 > /dev/null 2>&1; then
+if curl -s http://localhost:8888 > /dev/null 2>&1; then
     log_ok "前端启动成功 ✓ (PID: $FRONTEND_PID)"
 else
     log_error "前端启动超时，请检查日志: tail -f /tmp/shuang-frontend.log"
@@ -196,10 +209,10 @@ echo "========================================"
 echo "  启动完成！"
 echo "========================================"
 echo ""
-echo -e "  前端地址:     ${CYAN}http://localhost:5173${NC}"
+echo -e "  前端地址:     ${CYAN}http://localhost:8888${NC}"
 echo -e "  后端地址:     ${CYAN}http://localhost:48080${NC}"
 echo -e "  接口文档:     ${CYAN}http://localhost:48080/swagger-ui${NC}"
-echo -e "  爆款拆解:    ${CYAN}http://localhost:5173/ai/video/analyze${NC}"
+echo -e "  爆款拆解:    ${CYAN}http://localhost:8888/ai/video/analyze${NC}"
 echo ""
 echo -e "  后端日志: tail -f /tmp/shuang-backend.log"
 echo -e "  前端日志: tail -f /tmp/shuang-frontend.log"

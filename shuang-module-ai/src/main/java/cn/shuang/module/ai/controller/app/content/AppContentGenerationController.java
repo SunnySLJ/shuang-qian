@@ -20,7 +20,7 @@ import static cn.shuang.framework.security.core.util.SecurityFrameworkUtils.getL
 
 @Tag(name = "用户 APP - AI 内容生成")
 @RestController
-@RequestMapping("/app/ai/content")
+@RequestMapping("/ai/content")
 @Slf4j
 @ConditionalOnProperty(value = "yudao.ai.content-generation.enable", havingValue = "true")
 public class AppContentGenerationController {

@@ -7,16 +7,20 @@ import cn.shuang.module.agency.controller.app.vo.AppBindAgencyReqVO;
 import cn.shuang.module.agency.controller.app.vo.AppChildAgencyVO;
 import cn.shuang.module.agency.controller.app.vo.AppPointTransferReqVO;
 import cn.shuang.module.agency.dal.dataobject.AgencyUserDO;
+import cn.shuang.module.agency.dal.dataobject.CommissionRecordDO;
 import cn.shuang.module.agency.service.AgencyUserService;
+import cn.shuang.module.agency.service.CommissionService;
 import cn.shuang.module.system.api.user.AdminUserApi;
 import cn.shuang.module.system.api.user.dto.AdminUserRespDTO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import static cn.shuang.framework.security.core.util.SecurityFrameworkUtils.getLoginUserId;
+import java.util.List;
 
 /**
  * 代理管理 - 用户端
@@ -25,13 +29,14 @@ import static cn.shuang.framework.security.core.util.SecurityFrameworkUtils.getL
  */
 @Tag(name = "用户端 - 代理管理")
 @RestController
-@RequestMapping("/app/agency")
+@RequestMapping("/agency")
 @RequiredArgsConstructor
 @Validated
 public class AppAgencyController {
 
     private final AgencyUserService agencyUserService;
     private final AdminUserApi adminUserApi;
+    private final CommissionService commissionService;
 
     @GetMapping("/user/my")
     @Operation(summary = "获取我的代理信息")
@@ -131,6 +136,35 @@ public class AppAgencyController {
         result.put("totalReceived", wallet[3]);
 
         return CommonResult.success(result);
+    }
+
+    @GetMapping("/commission/records")
+    @Operation(summary = "获取分佣记录列表")
+    public CommonResult<java.util.List<AppCommissionRecordVO>> getCommissionRecords(
+            @RequestParam(value = "pageNo", defaultValue = "1") Integer pageNo,
+            @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize) {
+        Long userId = getLoginUserId();
+        java.util.List<CommissionRecordDO> records = commissionService.getCommissionRecords(userId, pageNo, pageSize);
+        java.util.List<AppCommissionRecordVO> result = new java.util.ArrayList<>();
+        for (CommissionRecordDO record : records) {
+            AppCommissionRecordVO vo = new AppCommissionRecordVO();
+            vo.setId(record.getId());
+            vo.setType(record.getBizType() == 1 ? "recharge" : "consume");
+            vo.setTitle(record.getBizType() == 1 ? "下级充值分佣" : "下级消费分佣");
+            vo.setAmount(record.getAmount());
+            vo.setCreateTime(record.getCreateTime() != null ? record.getCreateTime().toString() : null);
+            result.add(vo);
+        }
+        return CommonResult.success(result);
+    }
+
+    @Data
+    public static class AppCommissionRecordVO {
+        private Long id;
+        private String type;
+        private String title;
+        private Integer amount;
+        private String createTime;
     }
 
 }

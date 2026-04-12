@@ -41,6 +41,10 @@
             <artifactId>shuang-module-pay</artifactId>
             <version>${revision}</version>
         </dependency>
+        <dependency>
+            <groupId>cn.shuang.boot</groupId>
+            <artifactId>shuang-spring-boot-starter-protection</artifactId>
+        </dependency>
 
         <!-- 业务组件 -->
 
@@ -146,6 +150,12 @@
             <groupId>org.springaicommunity</groupId>
             <artifactId>moonshot-spring-boot-starter</artifactId>
             <version>1.0.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.volcengine</groupId>
+            <artifactId>volc-sdk-java</artifactId>
+            <version>1.0.266</version>
         </dependency>
 
         <!-- 向量存储：https://db-engines.com/en/ranking/vector+dbms -->

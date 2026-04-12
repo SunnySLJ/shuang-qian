@@ -150,6 +150,12 @@ public class AiImageDO extends BaseDO {
     private String coverUrl;
 
     /**
+     * 积分扣减业务订单号（用于退款追溯）
+     * 格式：video:{bizType}:{userId}:{uuid}
+     */
+    private String bizOrderNo;
+
+    /**
      * 视频时长（秒）
      */
     private Integer duration;

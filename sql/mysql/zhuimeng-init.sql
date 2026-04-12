@@ -195,6 +195,7 @@ CREATE TABLE `agency_commission_record` (
     `order_id`            BIGINT       DEFAULT NULL COMMENT '关联订单 ID',
     `amount`              INT          NOT NULL COMMENT '分成金额（积分）',
     `commission_rate`     INT          NOT NULL COMMENT '分成比例（万分比）',
+    `level`              TINYINT      DEFAULT NULL COMMENT '代理层级：1-一级代理（直接上级），2-二级代理（间接上级）',
     `status`              TINYINT      NOT NULL DEFAULT 0 COMMENT '状态：0-待结算，1-已结算，2-已取消',
     `settle_time`         DATETIME     DEFAULT NULL COMMENT '结算时间',
     `remark`              VARCHAR(255) DEFAULT NULL COMMENT '备注',

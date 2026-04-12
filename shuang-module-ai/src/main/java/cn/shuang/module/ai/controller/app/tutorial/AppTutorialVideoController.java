@@ -27,7 +27,7 @@ import static cn.shuang.framework.common.pojo.CommonResult.success;
  */
 @Tag(name = "用户 APP - 教程视频")
 @RestController
-@RequestMapping("/app/ai/tutorial")
+@RequestMapping("/ai/tutorial")
 @Validated
 public class AppTutorialVideoController {
 

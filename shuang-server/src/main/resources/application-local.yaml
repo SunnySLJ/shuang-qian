@@ -215,8 +215,12 @@ wx:
 
 # 芋道配置项，设置当前项目所有自定义的配置
 yudao:
+  file:
+    default-directory: ${YUDAO_FILE_DEFAULT_DIRECTORY:flashCreation/public-info}
   captcha:
     enable: false # 本地环境，暂时关闭图片验证码，方便登录等接口的测试；
+  tenant:
+    enable: false # 本地环境关闭多租户，避免依赖 system_tenant 等基础表
   security:
     mock-enable: true
   pay:
@@ -235,17 +239,42 @@ yudao:
   ai:
     wumo:
       enable: true
-      api-key: ${WUMO_API_KEY:XQuRvI6ZUoVg37e0PpcYDheRfY}
+      api-key: ${WUMO_API_KEY:}
       base-url: ${WUMO_API_BASE_URL:https://api.wuyinkeji.com/api}
       poll-interval: 5000 # 轮询间隔（毫秒）
       max-wait-time: 300000 # 最大等待时间（毫秒），5 分钟
+    video-analyze:
+      default-provider: ${VIDEO_ANALYZE_PROVIDER:aliyun} # aliyun / doubao / wumo
+      timeout-seconds: 180
+      aliyun:
+        enabled: ${ALIYUN_VIDEO_ANALYZE_ENABLED:true}
+        api-key: ${ALIYUN_BAILIAN_API_KEY:}
+        base-url: ${ALIYUN_BAILIAN_BASE_URL:https://dashscope.aliyuncs.com/compatible-mode/v1}
+        model: ${ALIYUN_BAILIAN_VIDEO_MODEL:qwen-vl-plus-latest}
+      doubao:
+        enabled: ${DOUBAO_VIDEO_ANALYZE_ENABLED:true}
+        api-key: ${DOUBAO_ARK_API_KEY:}
+        base-url: ${DOUBAO_ARK_BASE_URL:https://ark.cn-beijing.volces.com/api/v3}
+        model: ${DOUBAO_VIDEO_ANALYZE_MODEL:doubao-seed-2-0-lite-260215}
     # 小云雀 AI 视频生成（火山引擎）
     xiaoniao:
       enable: true
-      api-key: ${XIAONIAO_API_KEY:} # 小云雀 API Key，从火山引擎获取
-      app-id: ${XIAONIAO_APP_ID:} # 火山引擎 App ID
-      base-url: https://ark.cn-beijing.volces.com/api/v3 # 火山引擎 API 地址
-      model: ${XIAONIAO_MODEL:video-01-20250515} # 小云雀模型名称
+      api-key: ${XIAONIAO_API_KEY:} # 兼容旧 Bearer 模式
+      app-id: ${XIAONIAO_APP_ID:}
+      access-key-id: ${XIAONIAO_ACCESS_KEY_ID:}
+      secret-access-key: ${XIAONIAO_SECRET_ACCESS_KEY:}
+      endpoint: ${XIAONIAO_ENDPOINT:visual.volcengineapi.com}
+      service: ${XIAONIAO_SERVICE:cv}
+      region: ${XIAONIAO_REGION:cn-north-1}
+      submit-action: ${XIAONIAO_SUBMIT_ACTION:CVSync2AsyncSubmitTask}
+      query-action: ${XIAONIAO_QUERY_ACTION:CVSync2AsyncGetResult}
+      version: ${XIAONIAO_VERSION:2022-08-31}
+      req-key: ${XIAONIAO_REQ_KEY:jimeng_video_generation}
+      base-url: https://ark.cn-beijing.volces.com/api/v3
+      model: ${XIAONIAO_MODEL:video-01-20250515}
+      default-ratio: ${XIAONIAO_DEFAULT_RATIO:16:9}
+      default-style-type: ${XIAONIAO_DEFAULT_STYLE_TYPE:product_showcase}
+      default-quality-level: ${XIAONIAO_DEFAULT_QUALITY_LEVEL:cinematic}
       poll-interval: 5000 # 轮询间隔（毫秒）
       max-wait-time: 300000 # 最大等待时间（毫秒），5 分钟
 

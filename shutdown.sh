@@ -34,12 +34,12 @@ else
     log_ok "后端未运行"
 fi
 
-# 停止占用 5173 端口的进程（前端 Vite）
-if lsof -ti:5173 &> /dev/null; then
-    PID=$(lsof -ti:5173)
+# 停止占用 8888 端口的进程（前端 Vite）
+if lsof -ti:8888 &> /dev/null; then
+    PID=$(lsof -ti:8888)
     kill -15 $PID 2>/dev/null
     sleep 1
-    if ! lsof -ti:5173 &> /dev/null; then
+    if ! lsof -ti:8888 &> /dev/null; then
         log_ok "前端 (PID: $PID) 已停止"
     else
         log_info "强制停止前端..."

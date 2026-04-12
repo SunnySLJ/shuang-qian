@@ -5,6 +5,7 @@ import cn.hutool.core.codec.Base64;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.map.MapUtil;
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.extra.spring.SpringUtil;
@@ -26,6 +27,7 @@ import cn.shuang.module.ai.framework.ai.core.model.midjourney.api.MidjourneyApi;
 import cn.shuang.module.ai.framework.ai.core.model.siliconflow.SiliconFlowImageOptions;
 import cn.shuang.module.ai.service.model.AiModelService;
 import cn.shuang.module.infra.api.file.FileApi;
+import cn.shuang.module.pay.service.WalletService;
 import com.alibaba.cloud.ai.dashscope.image.DashScopeImageOptions;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -60,6 +62,12 @@ import static cn.shuang.module.ai.enums.ErrorCodeConstants.*;
 @Slf4j
 public class AiImageServiceImpl implements AiImageService {
 
+    /**
+     * AI 生图消耗积分（单位：分）
+     * bizType = -1（生图），对应 CLAUDE.md 中的定义
+     */
+    private static final int DRAW_IMAGE_POINTS = 4;
+
     @Resource
     private AiModelService modelService;
 
@@ -68,6 +76,9 @@ public class AiImageServiceImpl implements AiImageService {
 
     @Resource
     private FileApi fileApi;
+
+    @Resource
+    private WalletService walletService;
 
     @Override
     public PageResult<AiImageDO> getImagePageMy(Long userId, AiImagePageReqVO pageReqVO) {
@@ -94,22 +105,28 @@ public class AiImageServiceImpl implements AiImageService {
 
     @Override
     public Long drawImage(Long userId, AiImageDrawReqVO drawReqVO) {
+        // 0. 生成幂等订单号
+        String bizOrderNo = "img:" + IdUtil.fastSimpleUUID();
+
         // 1. 校验模型
         AiModelDO model = modelService.validateModel(drawReqVO.getModelId());
 
-        // 2. 保存数据库
+        // 2. 扣减积分（事务内完成）
+        walletService.deductPoints(userId, DRAW_IMAGE_POINTS, -1, bizOrderNo, "AI生图消耗");
+
+        // 3. 保存数据库
         AiImageDO image = BeanUtils.toBean(drawReqVO, AiImageDO.class).setUserId(userId)
                 .setPlatform(model.getPlatform()).setModelId(model.getId()).setModel(model.getModel())
                 .setPublicStatus(false).setStatus(AiImageStatusEnum.IN_PROGRESS.getStatus());
         imageMapper.insert(image);
 
-        // 3. 异步绘制，后续前端通过返回的 id 进行轮询结果
-        getSelf().executeDrawImage(image, drawReqVO, model);
+        // 4. 异步绘制，后续前端通过返回的 id 进行轮询结果
+        getSelf().executeDrawImage(image, drawReqVO, model, bizOrderNo);
         return image.getId();
     }
 
     @Async
-    public void executeDrawImage(AiImageDO image, AiImageDrawReqVO reqVO, AiModelDO model) {
+    public void executeDrawImage(AiImageDO image, AiImageDrawReqVO reqVO, AiModelDO model, String bizOrderNo) {
         try {
             // 1.1 构建请求
             ImageOptions request = buildImageOptions(reqVO, model);
@@ -134,6 +151,20 @@ public class AiImageServiceImpl implements AiImageService {
             imageMapper.updateById(new AiImageDO().setId(image.getId())
                     .setStatus(AiImageStatusEnum.FAIL.getStatus())
                     .setErrorMessage(ex.getMessage()).setFinishTime(LocalDateTime.now()));
+            // 生成失败，回滚已扣减的积分
+            refundImageGenerationCost(image.getUserId(), bizOrderNo);
+        }
+    }
+
+    /**
+     * 回滚图片生成消耗的积分
+     */
+    private void refundImageGenerationCost(Long userId, String bizOrderNo) {
+        try {
+            walletService.addPoints(userId, DRAW_IMAGE_POINTS, 5, bizOrderNo, "AI生图失败退回积分");
+            log.info("[refundImageGenerationCost][积分回滚成功] userId={}, bizOrderNo={}", userId, bizOrderNo);
+        } catch (Exception ex) {
+            log.error("[refundImageGenerationCost][积分回滚失败] userId={}, bizOrderNo={}", userId, bizOrderNo, ex);
         }
     }
 
